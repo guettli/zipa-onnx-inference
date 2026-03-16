@@ -44,6 +44,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan relaxandlearn.de >> ~/.ssh/known_hosts 2>/dev/null
-          rsync -av --delete -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+          ssh-keyscan -v relaxandlearn.de >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -v -o BatchMode=yes zipa-onnx-inference@relaxandlearn.de "echo SSH OK"
+          rsync -av --delete -e "ssh -i ~/.ssh/deploy_key -v" \
             web/dist/ zipa-onnx-inference@relaxandlearn.de:public_html/
