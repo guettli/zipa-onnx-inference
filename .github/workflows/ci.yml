@@ -29,3 +29,9 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      - name: Build web app
+        run: |
+          cd web
+          pnpm install
+          pnpm build

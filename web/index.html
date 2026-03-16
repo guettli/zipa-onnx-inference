@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZIPA ONNX Inference</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0f0f0f;
+      color: #d4d4d4;
+      padding: 1.5rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    h1 { font-size: 1.3rem; color: #9cdcfe; margin-bottom: 1.5rem; letter-spacing: .05em; }
+
+    section { margin-bottom: 1.5rem; }
+
+    label { font-size: .8rem; color: #888; display: block; margin-bottom: .3rem; }
+
+    select, button {
+      font-family: inherit;
+      font-size: .85rem;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border: 1px solid #3c3c3c;
+      border-radius: 3px;
+      padding: .4rem .7rem;
+      cursor: pointer;
+    }
+    select { width: 100%; max-width: 480px; }
+    select:focus, button:focus { outline: 1px solid #9cdcfe; }
+
+    #model-status {
+      font-size: .8rem;
+      margin-top: .5rem;
+      color: #888;
+    }
+    #model-status.ready { color: #4ec9b0; }
+    #model-status.error { color: #f44747; }
+
+    #progress-bar {
+      height: 4px;
+      background: #1e1e1e;
+      border-radius: 2px;
+      margin-top: .4rem;
+      max-width: 480px;
+      overflow: hidden;
+      display: none;
+    }
+    #progress-fill {
+      height: 100%;
+      background: #9cdcfe;
+      transition: width .2s;
+      width: 0%;
+    }
+
+    #record-btn {
+      padding: .6rem 2rem;
+      font-size: 1rem;
+      border-color: #555;
+    }
+    #record-btn.recording {
+      border-color: #f44747;
+      color: #f44747;
+      animation: blink .8s step-start infinite;
+    }
+    @keyframes blink { 50% { opacity: .5; } }
+
+    #record-hint { font-size: .75rem; color: #555; margin-top: .4rem; }
+
+    /* Beams */
+    #beams { font-size: .85rem; }
+    .beam-row {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      margin-bottom: .25rem;
+    }
+    .beam-prob {
+      width: 4.5rem;
+      text-align: right;
+      color: #ce9178;
+      flex-shrink: 0;
+    }
+    .beam-bar-bg {
+      flex: 1;
+      height: 1.1rem;
+      background: #1e1e1e;
+      border-radius: 2px;
+      max-width: 220px;
+      overflow: hidden;
+    }
+    .beam-bar-fill { height: 100%; background: #264f78; border-radius: 2px; }
+    .beam-text { color: #9cdcfe; min-width: 8rem; }
+
+    /* Frame table */
+    #frames-section { overflow-x: auto; }
+    table {
+      border-collapse: collapse;
+      font-size: .75rem;
+      white-space: nowrap;
+    }
+    th {
+      color: #888;
+      font-weight: normal;
+      padding: .15rem .5rem;
+      border-bottom: 1px solid #2a2a2a;
+      text-align: left;
+    }
+    td { padding: .1rem .5rem; }
+    tr:hover td { background: #1a1a1a; }
+    .f-idx { color: #555; }
+    .tok { color: #9cdcfe; font-weight: bold; }
+    .prob-high { color: #4ec9b0; }
+    .prob-mid  { color: #ce9178; }
+    .prob-low  { color: #555; }
+    .alt { color: #888; margin-right: .3rem; }
+
+    #status-line {
+      font-size: .8rem;
+      color: #555;
+      min-height: 1.2em;
+      margin-bottom: .5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>⟨ ZIPA ONNX Inference ⟩</h1>
+
+  <section>
+    <label>Model</label>
+    <select id="model-select"></select>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+    <div id="model-status">Not loaded</div>
+  </section>
+
+  <section>
+    <button id="record-btn" disabled>▶ Record</button>
+    <div id="record-hint">Hold to record, release to run inference</div>
+  </section>
+
+  <div id="status-line"></div>
+
+  <section id="beams-section" style="display:none">
+    <label>Beam hypotheses (normalised over top-10)</label>
+    <div id="beams"></div>
+  </section>
+
+  <section id="frames-section" style="display:none">
+    <label>Frame-level predictions (non-blank frames only)</label>
+    <table>
+      <thead><tr><th>frame</th><th>top token</th><th>prob</th><th>alternatives</th></tr></thead>
+      <tbody id="frames-body"></tbody>
+    </table>
+  </section>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
