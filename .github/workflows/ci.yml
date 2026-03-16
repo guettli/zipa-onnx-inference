@@ -36,15 +36,15 @@ jobs:
           pnpm install
           pnpm build
 
-      - name: Deploy to relaxandlearn.de
+      - name: Deploy to relaxandplay.de
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST_KEY: ${{ secrets.DEPLOY_HOST_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -v relaxandlearn.de >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy_key -v -o BatchMode=yes zipa-onnx-inference@relaxandlearn.de "echo SSH OK"
-          rsync -av --delete -e "ssh -i ~/.ssh/deploy_key -v" \
-            web/dist/ zipa-onnx-inference@relaxandlearn.de:public_html/
+          echo "$DEPLOY_HOST_KEY" >> ~/.ssh/known_hosts
+          rsync -av --delete -e "ssh -i ~/.ssh/deploy_key" \
+            web/dist/ zipa-onnx-inference@relaxandplay.de:public_html/
