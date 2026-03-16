@@ -46,4 +46,4 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan relaxandlearn.de >> ~/.ssh/known_hosts 2>/dev/null
           rsync -av --delete -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            web/dist/ deploy@relaxandlearn.de:/var/www/zipa-onnx-inference/
+            web/dist/ zipa-onnx-inference@relaxandlearn.de:public_html/
