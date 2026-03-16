@@ -15,8 +15,9 @@
           buildInputs = [
             pkgs.nodejs_22
             pkgs.nodePackages.pnpm
-            pkgs.ffmpeg      # required: audio decoding (WAV, FLAC, MP3, ...)
-            pkgs.go-task     # Taskfile runner
+            pkgs.tsx               # TypeScript runner (used directly in Taskfile)
+            pkgs.ffmpeg            # required: audio decoding (WAV, FLAC, MP3, ...)
+            pkgs.go-task           # Taskfile runner
           ];
         };
       }

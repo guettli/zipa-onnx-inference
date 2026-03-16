@@ -161,7 +161,7 @@ export async function downloadModel(modelId: string, precision: Precision = 'fp3
 
   if (model.type === 'ctc') {
     const suffix = precision === 'fp32' ? '' : `.${precision}`;
-    const remoteFile = `exp/model${suffix}.onnx`;
+    const remoteFile = `model${suffix}.onnx`;
     const localPath = ctcModelPath(modelId, precision);
     console.error(`Downloading ${remoteFile} ...`);
     await downloadFile(hfDownloadUrl(model.hfRepo, remoteFile), localPath);

@@ -8,17 +8,17 @@ import {
   downloadModel,
   getModelOnnxPath,
   type Precision,
-} from './models.js';
-import { loadAudio } from './audio.js';
-import { runCtcInference } from './inference.js';
-import { printDebugOutput } from './output.js';
+} from '../src/models.js';
+import { loadAudio } from '../src/audio.js';
+import { runCtcInference } from '../src/inference.js';
+import { printDebugOutput } from '../src/output.js';
 
 function printHelp() {
   console.log(`
 Usage:
-  tsx src/cli.ts <audio-file> [options]
-  tsx src/cli.ts --list-models
-  tsx src/cli.ts --download <model-id> [precision]
+  tsx scripts/cli.ts <audio-file> [options]
+  tsx scripts/cli.ts --list-models
+  tsx scripts/cli.ts --download <model-id> [precision]
 
 Options:
   --model <id>           Model to use (default: zipa-small-crctc-300k)
@@ -27,10 +27,10 @@ Options:
   --download <id> [p]    Download a model to ~/.cache/zipa/
 
 Examples:
-  tsx src/cli.ts audio.wav
-  tsx src/cli.ts audio.wav --model zipa-large-crctc-500k --precision fp16
-  tsx src/cli.ts --list-models
-  tsx src/cli.ts --download zipa-small-crctc-300k fp32
+  tsx scripts/cli.ts audio.wav
+  tsx scripts/cli.ts audio.wav --model zipa-large-crctc-500k --precision fp16
+  tsx scripts/cli.ts --list-models
+  tsx scripts/cli.ts --download zipa-small-crctc-300k fp32
 `);
 }
 

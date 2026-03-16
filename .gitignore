@@ -1,1 +1,4 @@
 .vscode
+.direnv
+node_modules/
+dist/

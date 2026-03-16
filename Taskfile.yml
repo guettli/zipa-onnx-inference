@@ -7,12 +7,12 @@ tasks:
 
   models:
     desc: List available models (downloaded ones are highlighted)
-    cmd: pnpm tsx src/cli.ts --list-models
+    cmd: tsx scripts/cli.ts --list-models
 
-  run:
-    desc: "Run inference on audio file. Usage: task run -- audio.wav [--model zipa-small-crctc-300k] [--precision fp32|fp16|int8]"
-    cmd: pnpm tsx src/cli.ts {{.CLI_ARGS}}
+  inference:
+    desc: "Run inference on audio file. Usage: task inference -- audio.wav [--model zipa-small-crctc-300k] [--precision fp32|fp16|int8]"
+    cmd: tsx scripts/cli.ts {{.CLI_ARGS}}
 
   download:
     desc: "Download a model. Usage: task download -- zipa-small-crctc-300k [fp32|fp16|int8]"
-    cmd: pnpm tsx src/cli.ts --download {{.CLI_ARGS}}
+    cmd: tsx scripts/cli.ts --download {{.CLI_ARGS}}
