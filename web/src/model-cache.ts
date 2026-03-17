@@ -13,6 +13,8 @@ export interface HistoryEntry {
   durationSec: number;
   transcript: string;
   modelId: string;
+  audioBuf?: ArrayBuffer; // raw audio bytes for reload
+  inferenceDurationMs?: number;
 }
 
 function openDB(): Promise<IDBDatabase> {

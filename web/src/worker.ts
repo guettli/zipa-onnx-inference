@@ -6,7 +6,7 @@
  */
 import * as ort from 'onnxruntime-web';
 import { extractFbank } from '../../src/fbank.js';
-import { BLANK_ID, SPACE_ID, ID_TO_TOKEN } from '../../src/tokens.js';
+import { BLANK_ID, ID_TO_TOKEN } from '../../src/tokens.js';
 import { getModelFromCache, saveModelToCache, getPartialDownload, savePartialDownload, clearPartialDownload } from './model-cache.js';
 import type { ModelInfo, WorkerInMsg, WorkerOutMsg, FrameOut, BeamOut } from './types.js';
 import { MODELS, modelUrl } from './types.js';

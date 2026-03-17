@@ -66,6 +66,10 @@
       font-size: 1rem;
       border-color: #555;
     }
+    #record-btn.acquiring {
+      border-color: #888;
+      color: #888;
+    }
     #record-btn.recording {
       border-color: #f44747;
       color: #f44747;
@@ -167,18 +171,22 @@
     .hist-dur   { color: #555; white-space: nowrap; }
     .hist-model { color: #888; white-space: nowrap; }
     .hist-ipa   { color: #9cdcfe; word-break: break-word; }
+    .hist-infer { color: #555; white-space: nowrap; }
+    .hist-load  { white-space: nowrap; }
+    .load-hist-btn { font-size: .75rem; padding: .1rem .4rem; cursor: pointer; }
 
     /* Privacy note */
-    .privacy-note {
+    .tech-info {
       margin-top: 2rem;
       padding: .7rem .9rem;
-      border: 1px solid #2a2a2a;
+      background: #1a1a1a;
+      border: 1px solid #444;
       border-radius: 3px;
       font-size: .8rem;
-      color: #555;
+      color: #d4d4d4;
       line-height: 1.6;
     }
-    .privacy-note strong { color: #888; }
+    .tech-info a { color: #9cdcfe; }
 
     footer {
       margin-top: 1.5rem;
@@ -225,7 +233,7 @@
 
   <section>
     <div class="input-row">
-      <button id="record-btn" disabled>▶ Record</button>
+      <button id="record-btn" disabled>🎤 Record</button>
       <button id="upload-btn" disabled>↑ Upload audio file</button>
       <input id="file-input" type="file" accept="audio/*,.wav,.mp3,.flac,.opus,.ogg,.m4a,.aac" style="display:none">
     </div>
@@ -268,7 +276,7 @@
     <div id="history-list"></div>
   </details>
 
-  <div class="privacy-note">
+  <div class="tech-info">
     <strong>Privacy:</strong> This page uses ONNX models running entirely in your browser via
     <a href="https://onnxruntime.ai/" target="_blank" rel="noopener">ONNX Runtime Web</a>.
     No audio or data is ever uploaded to any server. This is a fully static web site with no backend.
@@ -283,6 +291,7 @@
       This inference UI is open source:
       <a href="https://github.com/guettli/zipa-onnx-inference" target="_blank" rel="noopener">guettli/zipa-onnx-inference</a>
     </p>
+    <p>Last deploy: <span id="build-time"></span></p>
   </footer>
 
   <script type="module" src="./src/main.ts"></script>

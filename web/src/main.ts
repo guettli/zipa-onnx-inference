@@ -5,6 +5,9 @@ import { isModelCached, getPartialDownload, saveRecording, getRecording,
 import type { HistoryEntry } from './model-cache.js';
 import { isActiveFrame, findActiveRange } from './frame-utils.js';
 
+(document.getElementById('build-time') as HTMLElement).textContent =
+  new Date(__BUILD_TIME__).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
 const errorLog          = document.getElementById('error-log')          as HTMLDivElement;
@@ -114,6 +117,7 @@ worker.onmessage = (ev: MessageEvent<WorkerOutMsg>) => {
       pendingRerun = false;
       rerunBtn.disabled = true;
       setStatus('Running inference…');
+      inferStartMs = performance.now();
       send({ type: 'infer', audio: lastAudio });
     } else {
       rerunBtn.disabled = lastAudio === null;
@@ -123,10 +127,13 @@ worker.onmessage = (ev: MessageEvent<WorkerOutMsg>) => {
   }
 
   if (msg.type === 'result') {
-    recordBtn.textContent = '▶ Record';
+    const inferenceDurationMs = inferStartMs > 0 ? performance.now() - inferStartMs : undefined;
+    inferStartMs = 0;
+    recordBtn.textContent = '🎤 Record';
     recordBtn.classList.remove('recording');
     setInputsDisabled(false);
-    resultModelEl.textContent = `Result from: ${modelSelect.value}`;
+    const inferSec = inferenceDurationMs !== undefined ? ` | inference: ${(inferenceDurationMs / 1000).toFixed(1)} s` : '';
+    resultModelEl.textContent = `Result from: ${modelSelect.value}${inferSec}`;
     resultModelEl.style.display = '';
     transcriptEl.textContent = msg.transcript || '(no speech detected)';
     transcriptSection.style.display = '';
@@ -136,10 +143,12 @@ worker.onmessage = (ev: MessageEvent<WorkerOutMsg>) => {
     setStatus('');
     // Save to history
     saveHistoryEntry({
-      datetime:    new Date().toISOString(),
-      durationSec: lastAudioDurationSec,
-      transcript:  msg.transcript,
-      modelId:     modelSelect.value,
+      datetime:             new Date().toISOString(),
+      durationSec:          lastAudioDurationSec,
+      transcript:           msg.transcript,
+      modelId:              modelSelect.value,
+      audioBuf:             lastRawBuf ?? undefined,
+      inferenceDurationMs,
     }).then(() => loadAndRenderHistory()).catch(() => {});
     return;
   }
@@ -167,6 +176,12 @@ function loadModel(autoRerun = false) {
   pendingRerun            = autoRerun;
   activeDownloadModelId   = id;
   setStatus('');
+  // Clear any result from the previous model.
+  resultModelEl.style.display     = 'none';
+  transcriptSection.style.display = 'none';
+  transcriptSection.open          = false;
+  beamsSection.style.display      = 'none';
+  framesSection.style.display     = 'none';
   send({ type: 'load', modelId: id });
 }
 
@@ -181,6 +196,8 @@ let stream: MediaStream | null = null;
 let lastAudio: Float32Array | null = null;
 let lastBlobUrl: string | null = null;
 let lastAudioDurationSec = 0;
+let lastRawBuf: ArrayBuffer | null = null;
+let inferStartMs = 0;
 
 // Restore last recording from IndexedDB if available.
 (async () => {
@@ -211,14 +228,26 @@ let lastAudioDurationSec = 0;
 // ── Recording ─────────────────────────────────────────────────────────────────
 
 async function startRecording() {
-  if (!stream) {
+  // Show waiting state immediately while mic permission is being granted.
+  recordBtn.textContent = '🤫 Wait…';
+  recordBtn.classList.add('acquiring');
+  recordBtn.disabled = true;
+  try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch (err) {
+    recordBtn.textContent = '🎤 Record';
+    recordBtn.classList.remove('acquiring');
+    recordBtn.disabled = false;
+    showError(`Microphone access denied: ${err}`);
+    return;
   }
+  recordBtn.classList.remove('acquiring');
+  recordBtn.disabled = false;
   chunks = [];
   mediaRecorder = new MediaRecorder(stream);
   mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
   mediaRecorder.start();
-  recordBtn.textContent = '● Recording…';
+  recordBtn.textContent = '🎙️ Recording…';
   recordBtn.classList.add('recording');
 }
 
@@ -226,6 +255,9 @@ async function stopRecording() {
   if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
   return new Promise<void>(resolve => {
     mediaRecorder!.onstop = async () => {
+      // Release mic immediately — don't keep it open between recordings.
+      stream?.getTracks().forEach(t => t.stop());
+      stream = null;
       const blob = new Blob(chunks, { type: 'audio/webm' });
       if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
       lastBlobUrl = URL.createObjectURL(blob);
@@ -239,10 +271,20 @@ async function stopRecording() {
   });
 }
 
-recordBtn.addEventListener('click', () => {
+// Start on pointerdown (fast), stop on click (after full press).
+// Flag prevents the click that follows the start-pointerdown from immediately stopping.
+let suppressNextClick = false;
+
+recordBtn.addEventListener('pointerdown', () => {
   if (!mediaRecorder || mediaRecorder.state === 'inactive') {
     startRecording();
-  } else {
+    suppressNextClick = true;
+  }
+});
+
+recordBtn.addEventListener('click', () => {
+  if (suppressNextClick) { suppressNextClick = false; return; }
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
     stopRecording();
   }
 });
@@ -269,8 +311,10 @@ fileInput.addEventListener('change', async () => {
 async function processAudio(blob: Blob) {
   setStatus('Processing audio…');
   const arrayBuffer  = await blob.arrayBuffer();
+  lastRawBuf         = arrayBuffer;
   const audioContext = new AudioContext({ sampleRate: 16000 });
-  const decoded      = await audioContext.decodeAudioData(arrayBuffer);
+  // Pass a copy so arrayBuffer is not detached by decodeAudioData.
+  const decoded      = await audioContext.decodeAudioData(arrayBuffer.slice(0));
   audioContext.close();
   lastAudioDurationSec = decoded.duration;
 
@@ -284,6 +328,7 @@ async function processAudio(blob: Blob) {
   lastAudio       = resampled.getChannelData(0);
 
   setStatus('Running inference…');
+  inferStartMs = performance.now();
   send({ type: 'infer', audio: lastAudio });
 }
 
@@ -291,6 +336,7 @@ rerunBtn.addEventListener('click', () => {
   if (!lastAudio) return;
   rerunBtn.disabled = true;
   setStatus('Running inference…');
+  inferStartMs = performance.now();
   send({ type: 'infer', audio: lastAudio });
 });
 
@@ -309,21 +355,66 @@ function renderHistory(entries: HistoryEntry[]) {
   const table = document.createElement('table');
   table.className = 'history-table';
   table.innerHTML = `<thead><tr>
-    <th>Date &amp; time</th><th>Duration</th><th>Model</th><th>IPA transcript</th>
+    <th>Date &amp; time</th><th>Audio</th><th>Inference</th><th>Model</th><th>IPA transcript</th><th></th>
   </tr></thead>`;
   const tbody = document.createElement('tbody');
   for (const e of entries) {
     const tr = document.createElement('tr');
+    const inferStr = e.inferenceDurationMs !== undefined
+      ? `${(e.inferenceDurationMs / 1000).toFixed(1)} s`
+      : '—';
     tr.innerHTML = `
       <td class="hist-time">${escHtml(formatDatetime(e.datetime))}</td>
       <td class="hist-dur">${e.durationSec.toFixed(1)} s</td>
+      <td class="hist-infer">${inferStr}</td>
       <td class="hist-model">${escHtml(e.modelId)}</td>
-      <td class="hist-ipa">${escHtml(e.transcript || '—')}</td>`;
+      <td class="hist-ipa">${escHtml(e.transcript || '—')}</td>
+      <td class="hist-load"></td>`;
+    if (e.audioBuf) {
+      const btn = document.createElement('button');
+      btn.textContent = 'Load';
+      btn.className = 'load-hist-btn';
+      btn.addEventListener('click', () => loadHistoryEntry(e));
+      tr.querySelector('.hist-load')!.appendChild(btn);
+    }
     tbody.appendChild(tr);
   }
   table.appendChild(tbody);
   historyList.innerHTML = '';
   historyList.appendChild(table);
+}
+
+async function loadHistoryEntry(e: HistoryEntry) {
+  if (!e.audioBuf) return;
+  const blob = new Blob([e.audioBuf], { type: 'audio/webm' });
+  if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
+  lastBlobUrl = URL.createObjectURL(blob);
+  playbackAudio.src = lastBlobUrl;
+  playbackSection.style.display = '';
+  // Switch to the model used for this entry before running inference.
+  if (modelSelect.value !== e.modelId && optionByModelId.has(e.modelId)) {
+    modelSelect.value = e.modelId;
+    // processAudio will be called once model-ready fires (pendingRerun path).
+    // Pre-decode so lastAudio/lastRawBuf are ready when model-ready fires.
+    setStatus('Processing audio…');
+    const arrayBuffer  = await blob.arrayBuffer();
+    lastRawBuf         = arrayBuffer;
+    const audioContext = new AudioContext({ sampleRate: 16000 });
+    const decoded      = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+    audioContext.close();
+    lastAudioDurationSec = decoded.duration;
+    const numSamples = Math.ceil(decoded.duration * 16000);
+    const offline    = new OfflineAudioContext(1, numSamples, 16000);
+    const source     = offline.createBufferSource();
+    source.buffer    = decoded;
+    source.connect(offline.destination);
+    source.start();
+    const resampled = await offline.startRendering();
+    lastAudio       = resampled.getChannelData(0);
+    loadModel(true); // sets pendingRerun; sends infer when model-ready fires
+  } else {
+    await processAudio(blob);
+  }
 }
 
 async function loadAndRenderHistory() {
