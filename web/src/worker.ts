@@ -6,10 +6,10 @@
  */
 import * as ort from 'onnxruntime-web';
 import { extractFbank } from '../../src/fbank.js';
-import { BLANK_ID, ID_TO_TOKEN } from '../../src/tokens.js';
+import { BLANK_ID, SPACE_ID, ID_TO_TOKEN } from '../../src/tokens.js';
 import { getModelFromCache, saveModelToCache, getPartialDownload, savePartialDownload, clearPartialDownload } from './model-cache.js';
 import type { ModelInfo, WorkerInMsg, WorkerOutMsg, FrameOut, BeamOut } from './types.js';
-import { MODELS } from './types.js';
+import { MODELS, modelUrl } from './types.js';
 
 // ── Option A: single-threaded, no SharedArrayBuffer needed ────────────────────
 ort.env.wasm.numThreads = 1;
@@ -20,12 +20,9 @@ ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.2/di
 
 let session: ort.InferenceSession | null = null;
 let loadedModelId: string | null = null;
+let cancelled = false;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function modelUrl(m: ModelInfo) {
-  return `https://huggingface.co/${m.hfRepo}/resolve/main/${m.file}`;
-}
 
 /** Download with resumable partial saves every 5 MB. */
 async function downloadWithProgress(url: string, onProgress: (pct: number, mb: number, total: number) => void): Promise<ArrayBuffer> {
@@ -34,8 +31,15 @@ async function downloadWithProgress(url: string, onProgress: (pct: number, mb: n
   let received = partial ? partial.data.byteLength : 0;
   if (partial) headers['Range'] = `bytes=${received}-`;
 
-  const resp = await fetch(url, { headers });
-  if (!resp.ok && resp.status !== 206) throw new Error(`HTTP ${resp.status}`);
+  let resp: Response;
+  try {
+    resp = await fetch(url, { headers });
+  } catch {
+    throw new Error(`Network error — check your internet connection and try again.`);
+  }
+  if (resp.status === 404) throw new Error(`Model file not found (404). The model may have moved on Hugging Face.`);
+  if (resp.status === 429) throw new Error(`Rate limited by Hugging Face (429). Please wait a moment and try again.`);
+  if (!resp.ok && resp.status !== 206) throw new Error(`Download failed (HTTP ${resp.status}). Try reloading the page.`);
 
   const total = partial
     ? partial.total
@@ -152,6 +156,67 @@ function ctcBeamSearch(frameProbs: Float32Array[], beamWidth = 10): BeamOut[] {
   return raw.map(b => ({ text: b.text, prob: b.rawProb / total }));
 }
 
+// ── Transcript with word boundaries ──────────────────────────────────────────
+
+/**
+ * Standard CTC greedy decode, including ▁ as spaces.
+ * Returns (text, charFrames) where charFrames[i] is the frame index of text[i].
+ */
+function ctcGreedyDecode(frameProbs: Float32Array[]): { text: string; charFrames: number[] } {
+  let text = '';
+  const charFrames: number[] = [];
+  let lastId = -1;
+  for (let f = 0; f < frameProbs.length; f++) {
+    const probs = frameProbs[f];
+    let maxId = 0;
+    for (let i = 1; i < probs.length; i++) if (probs[i] > probs[maxId]) maxId = i;
+    if (maxId === BLANK_ID) { lastId = -1; continue; }
+    if (maxId === lastId) continue;
+    lastId = maxId;
+    const sym = ID_TO_TOKEN[maxId];
+    if (!sym || sym.startsWith('<')) continue;
+    if (sym === '▁') {
+      // Only add a space if there isn't already one at the end.
+      if (text.length > 0 && !text.endsWith(' ')) { text += ' '; charFrames.push(f); }
+    } else {
+      text += sym;
+      charFrames.push(f);
+    }
+  }
+  return { text: text.trim(), charFrames: text.trimStart() === text ? charFrames : charFrames.slice(text.length - text.trimStart().length) };
+}
+
+/**
+ * If the greedy text has no spaces, insert them at blank-dominant gaps
+ * between consecutive emitted characters (≥ GAP_FRAMES consecutive frames
+ * where blank probability > 0.5).
+ */
+function insertGapSpaces(frameProbs: Float32Array[], text: string, charFrames: number[]): string {
+  if (text.includes(' ')) return text;
+  const GAP_FRAMES = 5; // ~200ms at 40ms/frame
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    if (i > 0 && charFrames[i] !== undefined && charFrames[i - 1] !== undefined) {
+      let blankRun = 0;
+      for (let f = charFrames[i - 1] + 1; f < charFrames[i]; f++) {
+        if (frameProbs[f]?.[BLANK_ID] > 0.5) blankRun++;
+      }
+      if (blankRun >= GAP_FRAMES) result += ' ';
+    }
+    result += text[i];
+  }
+  return result;
+}
+
+/**
+ * Build the best transcript string: greedy decode (which respects ▁ tokens)
+ * with blank-gap spaces as a fallback when ▁ is never the argmax.
+ */
+function buildTranscript(frameProbs: Float32Array[]): string {
+  const { text, charFrames } = ctcGreedyDecode(frameProbs);
+  return insertGapSpaces(frameProbs, text, charFrames);
+}
+
 // ── Message handler ───────────────────────────────────────────────────────────
 
 self.onmessage = async (ev: MessageEvent<WorkerInMsg>) => {
@@ -185,14 +250,28 @@ self.onmessage = async (ev: MessageEvent<WorkerInMsg>) => {
     }
   }
 
+  if (msg.type === 'cancel') {
+    cancelled = true;
+    return;
+  }
+
   if (msg.type === 'infer') {
+    cancelled = false;
+    const TIMEOUT_MS = 30_000;
+    const timeoutId = setTimeout(() => {
+      cancelled = true;
+      self.postMessage({ type: 'error', message: 'Inference timed out after 30 s. Try a shorter recording or a smaller model.' } satisfies WorkerOutMsg);
+    }, TIMEOUT_MS);
+
     try {
       if (!session) throw new Error('Model not loaded');
 
       const { features, numFrames } = extractFbank(msg.audio);
+      if (cancelled) return;
       const inputTensor = new ort.Tensor('float32', features, [1, numFrames, 80]);
       const lensTensor  = new ort.Tensor('int64', new BigInt64Array([BigInt(numFrames)]), [1]);
       const outputs     = await session.run({ x: inputTensor, x_lens: lensTensor });
+      if (cancelled) return;
       const raw         = outputs[session.outputNames[0]];
 
       const [, numCtcFrames, vocabSize] = raw.dims as number[];
@@ -208,7 +287,11 @@ self.onmessage = async (ev: MessageEvent<WorkerInMsg>) => {
 
         // Top-5 tokens
         const top5 = Array.from(probs)
-          .map((prob, id) => ({ sym: ID_TO_TOKEN[id] ?? `?${id}`, prob }))
+          .map((prob, id) => {
+            const sym = ID_TO_TOKEN[id];
+            if (sym === undefined) console.warn(`Unknown token id ${id} in vocab`);
+            return { sym: sym ?? `?${id}`, prob };
+          })
           .filter(t => !t.sym.startsWith('<') && t.sym !== '▁')
           .sort((a, b) => b.prob - a.prob)
           .slice(0, 5);
@@ -216,10 +299,14 @@ self.onmessage = async (ev: MessageEvent<WorkerInMsg>) => {
         framesOut.push({ top5 });
       }
 
-      const beams = ctcBeamSearch(frameProbs);
-      self.postMessage({ type: 'result', frames: framesOut, beams } satisfies WorkerOutMsg);
+      if (cancelled) return;
+      const beams      = ctcBeamSearch(frameProbs);
+      const transcript = buildTranscript(frameProbs);
+      self.postMessage({ type: 'result', frames: framesOut, beams, transcript } satisfies WorkerOutMsg);
     } catch (e) {
-      self.postMessage({ type: 'error', message: String(e) } satisfies WorkerOutMsg);
+      if (!cancelled) self.postMessage({ type: 'error', message: String(e) } satisfies WorkerOutMsg);
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 };

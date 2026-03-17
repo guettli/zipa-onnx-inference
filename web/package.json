@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "tsx src/frame-utils.test.ts"
   },
   "dependencies": {
     "onnxruntime-web": "1.24.2"

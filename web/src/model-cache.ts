@@ -4,7 +4,16 @@
 const DB_NAME = "onnx-model-cache";
 const STORE_NAME = "models";
 const PARTIAL_STORE_NAME = "partial-downloads";
-const DB_VERSION = 2;
+const HISTORY_STORE = "history";
+const DB_VERSION = 3;
+
+export interface HistoryEntry {
+  id?: number;
+  datetime: string;   // ISO 8601
+  durationSec: number;
+  transcript: string;
+  modelId: string;
+}
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -16,6 +25,9 @@ function openDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(PARTIAL_STORE_NAME)) {
         db.createObjectStore(PARTIAL_STORE_NAME);
+      }
+      if (!db.objectStoreNames.contains(HISTORY_STORE)) {
+        db.createObjectStore(HISTORY_STORE, { keyPath: 'id', autoIncrement: true });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -90,6 +102,88 @@ export async function deleteModelFromCache(key: string): Promise<void> {
     const store = tx.objectStore(STORE_NAME);
     const req = store.delete(key);
     req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+const RECORDING_KEY = '__last_recording__';
+
+export async function saveRecording(data: ArrayBuffer): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.put(data, RECORDING_KEY);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getRecording(): Promise<ArrayBuffer | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.get(RECORDING_KEY);
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveHistoryEntry(entry: Omit<HistoryEntry, 'id'>): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(HISTORY_STORE, "readwrite");
+    const req = tx.objectStore(HISTORY_STORE).add(entry);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function loadHistory(): Promise<HistoryEntry[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(HISTORY_STORE, "readonly");
+    const req = tx.objectStore(HISTORY_STORE).getAll();
+    req.onsuccess = () => resolve((req.result as HistoryEntry[]).reverse()); // newest first
+    req.onerror = () => reject(req.error);
+  });
+}
+
+/** Delete partial downloads whose URL already exists in the completed models store. */
+export async function pruneStalePartials(): Promise<void> {
+  const db = await openDB();
+  const keys = await new Promise<IDBValidKey[]>((resolve, reject) => {
+    const tx = db.transaction(PARTIAL_STORE_NAME, "readonly");
+    const req = tx.objectStore(PARTIAL_STORE_NAME).getAllKeys();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  for (const key of keys) {
+    const isComplete = await new Promise<boolean>((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const req = tx.objectStore(STORE_NAME).getKey(key);
+      req.onsuccess = () => resolve(req.result !== undefined);
+      req.onerror = () => reject(req.error);
+    });
+    if (isComplete) {
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(PARTIAL_STORE_NAME, "readwrite");
+        const req = tx.objectStore(PARTIAL_STORE_NAME).delete(key);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+  }
+}
+
+export async function isModelCached(key: string): Promise<boolean> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.getKey(key);
+    req.onsuccess = () => resolve(req.result !== undefined);
     req.onerror = () => reject(req.error);
   });
 }

@@ -16,3 +16,13 @@ tasks:
   download:
     desc: "Download a model. Usage: task download -- zipa-small-crctc-300k [fp32|fp16|int8]"
     cmd: tsx scripts/cli.ts --download {{.CLI_ARGS}}
+
+  test:
+    desc: Run unit tests for the web app
+    dir: web
+    cmd: pnpm test
+
+  deploy:
+    desc: Run tests, build web app, and deploy to relaxandplay.de/zipa-onnx-inference/
+    deps: [test]
+    cmd: ./scripts/deploy.sh

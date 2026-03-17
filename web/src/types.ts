@@ -8,6 +8,10 @@ export interface ModelInfo {
   sizeMb: number;
 }
 
+export function modelUrl(m: ModelInfo): string {
+  return `https://huggingface.co/${m.hfRepo}/resolve/main/${m.file}`;
+}
+
 export const MODELS: ModelInfo[] = [
   { id: 'zipa-small-crctc-ns-700k/int8',  label: 'Small NS 700k  int8  ~65 MB (recommended)',  hfRepo: 'anyspeech/zipa-small-crctc-ns-700k',  file: 'model.int8.onnx', sizeMb: 65  },
   { id: 'zipa-small-crctc-300k/int8',     label: 'Small CTC 300k  int8  ~65 MB',               hfRepo: 'anyspeech/zipa-small-crctc-300k',     file: 'model.int8.onnx', sizeMb: 65  },
@@ -18,13 +22,14 @@ export const MODELS: ModelInfo[] = [
 ];
 
 export type WorkerInMsg =
-  | { type: 'load';  modelId: string }
-  | { type: 'infer'; audio: Float32Array };
+  | { type: 'load';   modelId: string }
+  | { type: 'infer';  audio: Float32Array }
+  | { type: 'cancel' };
 
 export type WorkerOutMsg =
   | { type: 'download-progress'; pct: number; mbReceived: number; mbTotal: number }
   | { type: 'model-ready'; modelId: string }
-  | { type: 'result'; frames: FrameOut[]; beams: BeamOut[] }
+  | { type: 'result'; frames: FrameOut[]; beams: BeamOut[]; transcript: string }
   | { type: 'error'; message: string };
 
 export interface FrameOut {

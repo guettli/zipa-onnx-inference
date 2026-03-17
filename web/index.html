@@ -59,6 +59,8 @@
       width: 0%;
     }
 
+    .input-row { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+
     #record-btn {
       padding: .6rem 2rem;
       font-size: 1rem;
@@ -72,6 +74,31 @@
     @keyframes blink { 50% { opacity: .5; } }
 
     #record-hint { font-size: .75rem; color: #555; margin-top: .4rem; }
+
+    audio { display: block; margin-top: .3rem; max-width: 480px; width: 100%; }
+
+    /* Collapsible details */
+    details { margin-bottom: 1.5rem; }
+    details > summary {
+      font-size: .8rem;
+      color: #888;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: .3rem;
+      list-style: none;
+    }
+    details > summary::before { content: '▶ '; font-size: .65rem; }
+    details[open] > summary::before { content: '▼ '; }
+    details > summary::-webkit-details-marker { display: none; }
+
+    /* Transcript */
+    #transcript {
+      font-size: 1.4rem;
+      color: #9cdcfe;
+      letter-spacing: .03em;
+      padding: .3rem 0;
+      word-break: break-word;
+    }
 
     /* Beams */
     #beams { font-size: .85rem; }
@@ -115,17 +142,74 @@
     td { padding: .1rem .5rem; }
     tr:hover td { background: #1a1a1a; }
     .f-idx { color: #555; }
+    .f-ms  { color: #555; text-align: right; }
     .tok { color: #9cdcfe; font-weight: bold; }
     .prob-high { color: #4ec9b0; }
     .prob-mid  { color: #ce9178; }
     .prob-low  { color: #555; }
     .alt { color: #888; margin-right: .3rem; }
+    .blank-frame td { opacity: .35; }
+    .blank-sym { color: #555 !important; font-weight: normal; }
+
+    /* History */
+    #history-list { font-size: .8rem; }
+    .history-table { width: 100%; border-collapse: collapse; }
+    .history-table th {
+      text-align: left;
+      color: #555;
+      font-weight: normal;
+      border-bottom: 1px solid #2a2a2a;
+      padding: .2rem .5rem;
+    }
+    .history-table td { padding: .25rem .5rem; vertical-align: top; }
+    .history-table tr:hover td { background: #1a1a1a; }
+    .hist-time  { color: #555; white-space: nowrap; }
+    .hist-dur   { color: #555; white-space: nowrap; }
+    .hist-model { color: #888; white-space: nowrap; }
+    .hist-ipa   { color: #9cdcfe; word-break: break-word; }
+
+    /* Privacy note */
+    .privacy-note {
+      margin-top: 2rem;
+      padding: .7rem .9rem;
+      border: 1px solid #2a2a2a;
+      border-radius: 3px;
+      font-size: .8rem;
+      color: #555;
+      line-height: 1.6;
+    }
+    .privacy-note strong { color: #888; }
+
+    footer {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #2a2a2a;
+      font-size: .9rem;
+      color: #888;
+      line-height: 1.8;
+    }
+    footer a { color: #9cdcfe; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    footer strong { color: #d4d4d4; }
 
     #status-line {
       font-size: .8rem;
       color: #555;
       min-height: 1.2em;
       margin-bottom: .5rem;
+    }
+
+    #error-log {
+      display: none;
+      background: #1a0000;
+      border: 1px solid #f44747;
+      border-radius: 3px;
+      padding: .6rem .8rem;
+      margin-bottom: 1rem;
+      font-size: .8rem;
+      color: #f44747;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -140,11 +224,31 @@
   </section>
 
   <section>
-    <button id="record-btn" disabled>▶ Record</button>
-    <div id="record-hint">Hold to record, release to run inference</div>
+    <div class="input-row">
+      <button id="record-btn" disabled>▶ Record</button>
+      <button id="upload-btn" disabled>↑ Upload audio file</button>
+      <input id="file-input" type="file" accept="audio/*,.wav,.mp3,.flac,.opus,.ogg,.m4a,.aac" style="display:none">
+    </div>
+    <div id="record-hint">Record: click to start, click again to stop — or upload a wav / mp3 / flac / opus file</div>
   </section>
 
+  <section id="playback-section" style="display:none">
+    <label>Audio</label>
+    <audio id="playback" controls></audio>
+    <div style="margin-top:.5rem">
+      <button id="rerun-btn" disabled>↺ Re-evaluate with current model</button>
+    </div>
+  </section>
+
+  <div id="error-log"></div>
   <div id="status-line"></div>
+
+  <div id="result-model" style="display:none;font-size:.75rem;color:#555;margin-bottom:.75rem"></div>
+
+  <details id="transcript-section" style="display:none">
+    <summary>Transcript</summary>
+    <div id="transcript"></div>
+  </details>
 
   <section id="beams-section" style="display:none">
     <label>Beam hypotheses (normalised over top-10)</label>
@@ -152,12 +256,34 @@
   </section>
 
   <section id="frames-section" style="display:none">
-    <label>Frame-level predictions (non-blank frames only)</label>
+    <label>Frame-level predictions</label>
     <table>
-      <thead><tr><th>frame</th><th>top token</th><th>prob</th><th>alternatives</th></tr></thead>
+      <thead><tr><th>frame</th><th>ms</th><th>top token</th><th>prob</th><th>alternatives</th></tr></thead>
       <tbody id="frames-body"></tbody>
     </table>
   </section>
+
+  <details id="history-section" style="display:none">
+    <summary>History</summary>
+    <div id="history-list"></div>
+  </details>
+
+  <div class="privacy-note">
+    <strong>Privacy:</strong> This page uses ONNX models running entirely in your browser via
+    <a href="https://onnxruntime.ai/" target="_blank" rel="noopener">ONNX Runtime Web</a>.
+    No audio or data is ever uploaded to any server. This is a fully static web site with no backend.
+  </div>
+
+  <footer>
+    <p>
+      Big thanks to <a href="https://github.com/lingjzhu/zipa" target="_blank" rel="noopener">lingjzhu/zipa</a>
+      and its author <strong>Jian Zhu</strong> for the ZIPA IPA speech recognition models that power this demo.
+    </p>
+    <p>
+      This inference UI is open source:
+      <a href="https://github.com/guettli/zipa-onnx-inference" target="_blank" rel="noopener">guettli/zipa-onnx-inference</a>
+    </p>
+  </footer>
 
   <script type="module" src="./src/main.ts"></script>
 </body>
