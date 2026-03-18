@@ -5,6 +5,7 @@ import { isModelCached, getPartialDownload, saveRecording, getRecording,
 import type { HistoryEntry } from './model-cache.js';
 import { isActiveFrame, findActiveRange } from './frame-utils.js';
 import ipaDescriptions from './ipa-descriptions.json';
+import { computeAllNeighbours, symAnchorId } from './ipa-neighbours.js';
 
 (document.getElementById('build-time') as HTMLElement).textContent =
   new Date(__BUILD_TIME__).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -569,6 +570,41 @@ function ipaStringHtml(text: string): string {
   }
   return html;
 }
+
+// ── IPA overview table ────────────────────────────────────────────────────────
+
+function renderIpaOverview() {
+  const tbody = document.getElementById('ipa-table-body') as HTMLTableSectionElement;
+  const neighbours = computeAllNeighbours(IPA_DESC);
+
+  for (const [sym, entry] of Object.entries(IPA_DESC)) {
+    if (!entry) continue;
+    const id  = symAnchorId(sym);
+    const shortDesc = entry.desc ? entry.desc.split('. ')[0] + '.' : '';
+    const nbrs = neighbours[sym] ?? [];
+    const nbrsHtml = nbrs
+      .map(n => {
+        const nEntry = IPA_DESC[n.sym];
+        const nTip = nEntry ? escHtml(nEntry.name) : '';
+        return `<a class="nbr-link" href="#${symAnchorId(n.sym)}" title="${nTip}">${escHtml(n.sym)}<span class="nbr-score">${(n.score * 100).toFixed(0)}%</span></a>`;
+      })
+      .join('');
+
+    const tr = document.createElement('tr');
+    tr.id = id;
+    tr.innerHTML = `
+      <td class="ov-sym"><a class="ipa-sym" href="${escHtml(entry.url)}" target="_blank" rel="noopener"
+          data-sym="${escHtml(sym)}" data-name="${escHtml(entry.name)}"
+          data-desc="${escHtml(shortDesc)}"
+          data-tip="${escHtml(entry.name)}">${escHtml(sym)}</a></td>
+      <td class="ov-name">${escHtml(entry.name)}</td>
+      <td class="ov-desc">${escHtml(shortDesc)}</td>
+      <td class="ov-nbrs">${nbrsHtml}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+renderIpaOverview();
 
 // Mobile popup for IPA symbols
 const ipaPopup = document.getElementById('ipa-popup') as HTMLDivElement;

@@ -175,6 +175,60 @@
     .hist-load  { white-space: nowrap; }
     .load-hist-btn { font-size: .75rem; padding: .1rem .4rem; cursor: pointer; }
 
+    /* Page description */
+    #page-desc {
+      font-size: .85rem;
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    #page-desc a { color: #9cdcfe; }
+
+    /* IPA overview */
+    #ipa-overview { margin-top: 2.5rem; }
+    #ipa-overview h2 {
+      font-size: 1rem;
+      color: #9cdcfe;
+      margin-bottom: .4rem;
+      letter-spacing: .04em;
+    }
+    .overview-note {
+      font-size: .75rem;
+      color: #555;
+      margin-bottom: .9rem;
+      line-height: 1.5;
+    }
+    #ipa-table { width: 100%; font-size: .78rem; border-collapse: collapse; white-space: normal; }
+    #ipa-table th {
+      color: #888;
+      font-weight: normal;
+      padding: .2rem .5rem;
+      border-bottom: 1px solid #2a2a2a;
+      text-align: left;
+      white-space: nowrap;
+    }
+    #ipa-table td { padding: .2rem .5rem; vertical-align: top; border-bottom: 1px solid #1a1a1a; }
+    #ipa-table tr:hover td { background: #1a1a1a; }
+    .ov-sym {
+      font-size: 1.2rem;
+      color: #9cdcfe;
+      text-align: center;
+      width: 2rem;
+    }
+    .ov-name { color: #d4d4d4; white-space: nowrap; }
+    .ov-desc { color: #888; max-width: 28rem; }
+    .ov-nbrs { white-space: nowrap; }
+    .nbr-link {
+      display: inline-block;
+      margin-right: .4rem;
+      color: #9cdcfe;
+      text-decoration: none;
+      border-bottom: 1px dashed #444;
+      font-size: .8rem;
+    }
+    .nbr-link:hover { border-bottom-color: #9cdcfe; }
+    .nbr-score { font-size: .68rem; color: #555; margin-left: .15rem; }
+
     /* Privacy note */
     .tech-info {
       margin-top: 2rem;
@@ -281,6 +335,15 @@
 <body>
   <h1>⟨ ZIPA ONNX Inference ⟩</h1>
 
+  <p id="page-desc">
+    Record your voice or upload an audio file and get an
+    <a href="https://en.wikipedia.org/wiki/International_Phonetic_Alphabet" target="_blank" rel="noopener">IPA</a>
+    (International Phonetic Alphabet) phonetic transcription — powered by
+    <a href="https://github.com/lingjzhu/zipa" target="_blank" rel="noopener">ZIPA</a> ONNX models running
+    entirely in your browser. Select a model, hit <strong>Record</strong>, and see each sound broken down into
+    IPA symbols with frame-level confidence scores. No audio ever leaves your device.
+  </p>
+
   <section>
     <label>Model</label>
     <select id="model-select"></select>
@@ -332,6 +395,25 @@
     <summary>History</summary>
     <div id="history-list"></div>
   </details>
+
+  <section id="ipa-overview">
+    <h2>IPA Symbol Overview</h2>
+    <p class="overview-note">
+      All symbols recognised by the model. Nearest neighbours are computed by Jaccard similarity of phonetic
+      features (vowel: height / backness / roundedness; consonant: voicing / place / manner).
+    </p>
+    <table id="ipa-table">
+      <thead>
+        <tr>
+          <th>Sym</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Nearest neighbours (score)</th>
+        </tr>
+      </thead>
+      <tbody id="ipa-table-body"></tbody>
+    </table>
+  </section>
 
   <div class="tech-info">
     <strong>Privacy:</strong> This page uses ONNX models running entirely in your browser via
