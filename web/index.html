@@ -219,6 +219,63 @@
       white-space: pre-wrap;
       word-break: break-all;
     }
+
+    /* IPA symbol tooltips */
+    .ipa-sym {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dashed #444;
+      text-decoration: none;
+      color: inherit;
+    }
+    .ipa-sym:hover { border-bottom-color: #9cdcfe; }
+
+    /* CSS tooltip bubble (desktop hover) */
+    .ipa-sym::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #252526;
+      color: #d4d4d4;
+      border: 1px solid #3c3c3c;
+      border-radius: 4px;
+      padding: .35rem .55rem;
+      font-size: .72rem;
+      line-height: 1.4;
+      white-space: nowrap;
+      max-width: 280px;
+      white-space: normal;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .12s;
+      z-index: 200;
+    }
+    .ipa-sym:hover::after { opacity: 1; }
+
+    /* Mobile tap popup */
+    #ipa-popup {
+      position: fixed;
+      bottom: 1.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: min(90vw, 340px);
+      background: #252526;
+      border: 1px solid #3c3c3c;
+      border-radius: 6px;
+      padding: .7rem .9rem;
+      font-size: .8rem;
+      color: #d4d4d4;
+      line-height: 1.5;
+      z-index: 300;
+      box-shadow: 0 4px 16px rgba(0,0,0,.6);
+      display: none;
+    }
+    #ipa-popup .pop-sym  { font-size: 1.5rem; color: #9cdcfe; margin-right: .4rem; }
+    #ipa-popup .pop-name { font-weight: bold; color: #9cdcfe; }
+    #ipa-popup .pop-desc { display: block; margin-top: .3rem; color: #aaa; font-size: .75rem; }
+    #ipa-popup a { color: #9cdcfe; font-size: .72rem; display: inline-block; margin-top: .3rem; }
   </style>
 </head>
 <body>
@@ -293,6 +350,8 @@
     </p>
     <p>Last deploy: <span id="build-time"></span></p>
   </footer>
+
+  <div id="ipa-popup"></div>
 
   <script type="module" src="./src/main.ts"></script>
 </body>

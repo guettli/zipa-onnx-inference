@@ -4,6 +4,7 @@ import { isModelCached, getPartialDownload, saveRecording, getRecording,
          pruneStalePartials, saveHistoryEntry, loadHistory } from './model-cache.js';
 import type { HistoryEntry } from './model-cache.js';
 import { isActiveFrame, findActiveRange } from './frame-utils.js';
+import ipaDescriptions from './ipa-descriptions.json';
 
 (document.getElementById('build-time') as HTMLElement).textContent =
   new Date(__BUILD_TIME__).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
@@ -135,7 +136,7 @@ worker.onmessage = (ev: MessageEvent<WorkerOutMsg>) => {
     const inferSec = inferenceDurationMs !== undefined ? ` | inference: ${(inferenceDurationMs / 1000).toFixed(1)} s` : '';
     resultModelEl.textContent = `Result from: ${modelSelect.value}${inferSec}`;
     resultModelEl.style.display = '';
-    transcriptEl.textContent = msg.transcript || '(no speech detected)';
+    transcriptEl.innerHTML = msg.transcript ? ipaStringHtml(msg.transcript) : '(no speech detected)';
     transcriptSection.style.display = '';
     transcriptSection.open = true;
     const durationMs = lastAudio ? (lastAudio.length / 16000) * 1000 : 0;
@@ -465,7 +466,7 @@ function renderResult(frames: FrameOut[], beams: BeamOut[], audioDurationMs = 0,
     row.innerHTML = `
       <span class="beam-prob">${pct}%</span>
       <div class="beam-bar-bg"><div class="beam-bar-fill" style="width:${pct}%"></div></div>
-      <span class="beam-text">${escHtml(text || '(empty)')}</span>`;
+      <span class="beam-text">${text ? ipaStringHtml(text) : '(empty)'}</span>`;
     beamsEl.appendChild(row);
   }
 
@@ -501,12 +502,12 @@ function renderResult(frames: FrameOut[], beams: BeamOut[], audioDurationMs = 0,
     const topProb = top5[0].prob;
     const alts = top5.slice(1)
       .filter(t => t.prob > 0.01)
-      .map(t => `<span class="alt">${escHtml(t.sym)}:${(t.prob * 100).toFixed(0)}%</span>`)
+      .map(t => `<span class="alt">${ipaSymHtml(t.sym)}:${(t.prob * 100).toFixed(0)}%</span>`)
       .join('');
     tr.innerHTML = `
       <td class="f-idx">${i}</td>
       <td class="f-ms">${ms}</td>
-      <td class="tok">${escHtml(top5[0].sym)}</td>
+      <td class="tok">${ipaSymHtml(top5[0].sym)}</td>
       <td class="${probClass(topProb)}">${(topProb * 100).toFixed(0)}%</td>
       <td>${alts}</td>`;
     framesBody.appendChild(tr);
@@ -534,5 +535,62 @@ window.addEventListener('unhandledrejection', e => {
 });
 
 function escHtml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+// ── IPA symbol tooltips ────────────────────────────────────────────────────────
+
+type IpaEntry = { name: string; desc: string; url: string } | null;
+const IPA_DESC = ipaDescriptions as Record<string, IpaEntry>;
+
+/** Wrap a single IPA symbol in a linked span with tooltip data. */
+function ipaSymHtml(sym: string): string {
+  const info = IPA_DESC[sym];
+  if (!info) return escHtml(sym);
+  const tip = info.desc ? `${info.name} — ${info.desc.split('. ')[0]}.` : info.name;
+  return `<a class="ipa-sym" href="${escHtml(info.url)}" target="_blank" rel="noopener" ` +
+         `data-sym="${escHtml(sym)}" data-name="${escHtml(info.name)}" ` +
+         `data-desc="${escHtml(info.desc.split('. ')[0] + '.')}" ` +
+         `data-tip="${escHtml(tip)}">${escHtml(sym)}</a>`;
+}
+
+/** Render an IPA string with each symbol wrapped for tooltip support. */
+function ipaStringHtml(text: string): string {
+  let html = '';
+  for (const ch of text) {
+    if (ch === ' ') {
+      html += ' ';
+    } else if (/\p{M}/u.test(ch)) {
+      // Combining diacritics: emit as plain text so they visually attach to prev char
+      html += escHtml(ch);
+    } else {
+      html += ipaSymHtml(ch);
+    }
+  }
+  return html;
+}
+
+// Mobile popup for IPA symbols
+const ipaPopup = document.getElementById('ipa-popup') as HTMLDivElement;
+
+document.addEventListener('click', (e: PointerEvent) => {
+  const target = e.target as HTMLElement;
+  const sym = target.closest<HTMLAnchorElement>('.ipa-sym');
+  if (!sym) {
+    ipaPopup.style.display = 'none';
+    return;
+  }
+  // On touch devices: show popup instead of following link
+  if (e.pointerType === 'touch' || ('ontouchstart' in window && navigator.maxTouchPoints > 0)) {
+    e.preventDefault();
+    const ch   = sym.dataset.sym  ?? sym.textContent ?? '';
+    const name = sym.dataset.name ?? '';
+    const desc = sym.dataset.desc ?? '';
+    const url  = sym.href;
+    ipaPopup.innerHTML =
+      `<span class="pop-sym">${escHtml(ch)}</span><span class="pop-name">${escHtml(name)}</span>` +
+      `<span class="pop-desc">${escHtml(desc)}</span>` +
+      `<a href="${escHtml(url)}" target="_blank" rel="noopener">→ Wikipedia</a>`;
+    ipaPopup.style.display = 'block';
+  }
+}, true);

@@ -1,0 +1,625 @@
+{
+  "<blk>": null,
+  "<sos/eos>": null,
+  "<unk>": null,
+  "▁": {
+    "name": "Word boundary",
+    "desc": "A word boundary marks the position between a word and a non-word character. In IPA transcription, this token (displayed as ⎵) represents a space between words.",
+    "url": "https://en.wikipedia.org/wiki/Word_boundary_(linguistics)"
+  },
+  "a": {
+    "name": "Open front unrounded vowel",
+    "desc": "The open front unrounded vowel, or low front unrounded vowel, is a type of vowel sound used in some spoken languages. It is one of the eight primary cardinal vowels, not directly intended to correspond to a vowel sound of a specific language but rather to serve as a fundamental reference point in a phonetic measuring system.",
+    "url": "https://en.wikipedia.org/wiki/Open_front_unrounded_vowel"
+  },
+  "b": {
+    "name": "Voiced bilabial plosive",
+    "desc": "A voiced bilabial plosive or stop is a type of consonantal sound used in many spoken languages. It is familiar to English-speakers as the \"b\" sound in \"obey\". The symbol in the International Phonetic Alphabet that represents this sound is ⟨b⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_bilabial_plosive"
+  },
+  "c": {
+    "name": "Voiceless palatal plosive",
+    "desc": "A voiceless palatal plosive or stop is a type of consonantal sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨c⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_palatal_plosive"
+  },
+  "d": {
+    "name": "Voiced dental and alveolar plosives",
+    "desc": "Voiced alveolar and dental plosives are a type of consonantal sound used in many spoken languages. The alveolar is familiar to English-speakers as the \"d\" sound in \"adore\".",
+    "url": "https://en.wikipedia.org/wiki/Voiced_dental_and_alveolar_plosives"
+  },
+  "e": {
+    "name": "Close-mid front unrounded vowel",
+    "desc": "The close-mid front unrounded vowel, or high-mid front unrounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨e⟩.",
+    "url": "https://en.wikipedia.org/wiki/Close-mid_front_unrounded_vowel"
+  },
+  "f": {
+    "name": "Voiceless labiodental fricative",
+    "desc": "A voiceless labiodental fricative is a type of consonantal sound used in a number of spoken languages. It is familiar to English-speakers as the \"f\" sound in \"face\". The symbol in the International Phonetic Alphabet that represents this sound is ⟨f⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_labiodental_fricative"
+  },
+  "g": {
+    "name": "Voiced velar plosive",
+    "desc": "A voiced velar plosive or stop is a type of consonantal sound used in many spoken languages. It is familiar to English-speakers as the \"g\" sound in \"against\".",
+    "url": "https://en.wikipedia.org/wiki/Voiced_velar_plosive"
+  },
+  "h": {
+    "name": "Voiceless glottal fricative",
+    "desc": "A voiceless glottal fricative, sometimes called a voiceless glottal transition or an aspirate, is a type of sound used in some spoken languages. It is familiar to English-speakers as the \"h\" sound in \"hut\". The symbol in the International Phonetic Alphabet that represents this sound is ⟨h⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_glottal_fricative"
+  },
+  "i": {
+    "name": "Close front unrounded vowel",
+    "desc": "The close front unrounded vowel, or high front unrounded vowel, is a type of vowel sound that occurs in most spoken languages, represented in the International Phonetic Alphabet by the symbol i. It is similar to the vowel sound in the English word meet—and often called long-e in American English. Although in English this sound has additional length and is not normally pronounced as a pure vowel, some dialects have been reported to pronounce the phoneme as a pure sound. A pure sound is also heard in many other languages, such as French, in words like chic.",
+    "url": "https://en.wikipedia.org/wiki/Close_front_unrounded_vowel"
+  },
+  "j": {
+    "name": "Voiced palatal approximant",
+    "desc": "A voiced palatal approximant is a type of consonant used in many spoken languages. It is familiar to English-speakers as the \"y\" sound in \"young\".",
+    "url": "https://en.wikipedia.org/wiki/Voiced_palatal_approximant"
+  },
+  "k": {
+    "name": "Voiceless velar plosive",
+    "desc": "A voiceless velar plosive or stop is a type of consonantal sound used in almost all spoken languages. It is familiar to English-speakers as the \"k\" sound in \"skip\". The symbol in the International Phonetic Alphabet that represents this sound is ⟨k⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_velar_plosive"
+  },
+  "l": {
+    "name": "Voiced dental and alveolar lateral approximants",
+    "desc": "Voiced dental and alveolar lateral approximants are a type of consonantal sound used in many spoken languages. It is familiar to English-speakers as the \"l\" sound in \"lift\". The symbol in the International Phonetic Alphabet that represents them is ⟨l⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_dental_and_alveolar_lateral_approximants"
+  },
+  "m": {
+    "name": "Voiced bilabial nasal",
+    "desc": "A voiced bilabial nasal is a type of consonantal sound which has been observed to occur in about 96% of spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨m⟩. The bilabial nasal occurs in English, and it is the sound represented by \"m\" in map and rum. Very few languages are known to lack this sound. A small number of languages have been observed to lack independent nasal phonemes altogether, such as Quileute, Makah, and Central Rotokas.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_bilabial_nasal"
+  },
+  "n": {
+    "name": "Voiced dental and alveolar nasals",
+    "desc": "A voiced alveolar nasal is a type of consonantal sound used in numerous spoken languages. It is familiar to English-speakers as the \"n\" sound in \"nice\". The symbol in the International Phonetic Alphabet that represents dental, alveolar, and postalveolar nasals is ⟨n⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_dental_and_alveolar_nasals"
+  },
+  "o": {
+    "name": "Close-mid back rounded vowel",
+    "desc": "The close-mid back rounded vowel, or high-mid back rounded vowel, is a type of vowel sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨o⟩.",
+    "url": "https://en.wikipedia.org/wiki/Close-mid_back_rounded_vowel"
+  },
+  "p": {
+    "name": "Voiceless bilabial plosive",
+    "desc": "A voiceless bilabial plosive or stop is a type of consonantal sound used in most spoken languages. It is familiar to English-speakers as the \"p\" sound in \"spit\". The symbol in the International Phonetic Alphabet that represents this sound is ⟨p⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_bilabial_plosive"
+  },
+  "q": {
+    "name": "Voiceless uvular plosive",
+    "desc": "A voiceless uvular plosive or stop is a type of consonantal sound, used in some spoken languages. It is pronounced like a voiceless velar plosive, except that the tongue makes contact not on the soft palate but on the uvula. The symbol in the International Phonetic Alphabet that represents this sound is ⟨q⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_uvular_plosive"
+  },
+  "r": {
+    "name": "Voiced dental and alveolar trills",
+    "desc": "A voiced alveolar trill is a type of consonantal sound used in some spoken languages. An alveolar trill is familiar to many people as the sound of an Italian \"r\".",
+    "url": "https://en.wikipedia.org/wiki/Voiced_dental_and_alveolar_trills"
+  },
+  "s": {
+    "name": "Voiceless alveolar fricative",
+    "desc": "Voiceless alveolar fricatives are a type of fricative consonant pronounced with the tip or blade of the tongue against the alveolar ridge just behind the teeth. This refers to a class of sounds, not a single sound. There are at least six types with significant perceptual differences:A voiceless alveolar sibilant has a strong hissing sound, as the s in English sink. It is one of the most common sounds in the world.\nA voiceless denti-alveolar sibilant or, also called apico-dental, has a weaker lisping sound like English th in thin. It occurs in Spanish dialects in southern Spain.\nA voiceless alveolar retracted sibilant [], and the subform apico-alveolar, has a weak hushing sound reminiscent of retroflex fricatives. It is used in the languages of northern Iberia, like Asturleonese, Basque, Peninsular Spanish, Catalan, Galician, and Northern European Portuguese. A similar retracted sibilant form is also used in Dutch, Icelandic, some southern dialects of Swedish, Finnish, and Greek. The retracted \"S\" is also used in Amerindian languages such as Muscogee, Garifuna, and many varieties of Quechua. It was supposedly the standard sound of s in Classical Latin. Its sound is between and [].\nA voiceless alveolar non-sibilant fricative or is similar to the th in English thin. It occurs in Icelandic as well as an intervocalic and word-final allophone of English in dialects such as Hiberno-English and Scouse.\nA voiceless alveolar lateral fricative sounds like a voiceless, strongly articulated version of English l and is written as ll in Welsh.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_alveolar_fricative"
+  },
+  "t": {
+    "name": "Voiceless dental and alveolar plosives",
+    "desc": "Voiceless alveolar and dental plosives are a type of consonantal sound used in almost all spoken languages. The alveolar is familiar to English-speakers as the \"t\" sound in \"stick\".",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_dental_and_alveolar_plosives"
+  },
+  "u": {
+    "name": "Close back rounded vowel",
+    "desc": "The close back rounded vowel, or high back rounded vowel, is a type of vowel sound used in many spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨u⟩.",
+    "url": "https://en.wikipedia.org/wiki/Close_back_rounded_vowel"
+  },
+  "v": {
+    "name": "Voiced labiodental fricative",
+    "desc": "A voiced labiodental fricative is a type of consonantal sound used in some spoken languages. It is familiar to English-speakers as the \"v\" sound in \"vase\". The symbol in the International Phonetic Alphabet that represents this sound is ⟨v⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_labiodental_fricative"
+  },
+  "w": {
+    "name": "Voiced labial–velar approximant",
+    "desc": "A voiced labial–velar approximant is a type of consonantal sound, used in certain spoken languages, including English. It is the sound denoted by the letter ⟨w⟩ in the English alphabet; likewise, the symbol in the International Phonetic Alphabet that represents this sound is ⟨w⟩, or rarely. In most languages it is the semivocalic counterpart of a close back rounded vowel. In inventory charts of languages with other labialized velar consonants, will be placed in the same column as those consonants. When consonant charts have only labial and velar columns, may be placed in the velar column, labial column, or both. The placement may have more to do with convenience or phonological criteria than with phonetics.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_labial%E2%80%93velar_approximant"
+  },
+  "x": {
+    "name": "Voiceless velar fricative",
+    "desc": "A voiceless velar fricative is a type of consonantal sound used in some spoken languages. It is familiar to many people as the German \"ch\" sound in \"Bach\". It was part of the consonant inventory of Old English and can still be found in some modern dialects of English, most notably in Scottish English, for example in loch, broch and saugh (willow).",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_velar_fricative"
+  },
+  "y": {
+    "name": "Close front rounded vowel",
+    "desc": "The close front rounded vowel, or high front rounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨y⟩. Across many languages, it is most commonly represented orthographically as ⟨ü⟩ or ⟨y⟩ but also as ⟨u⟩ ; ⟨iu⟩/⟨yu⟩ ; ⟨уь⟩ ; or ⟨ү⟩.",
+    "url": "https://en.wikipedia.org/wiki/Close_front_rounded_vowel"
+  },
+  "z": {
+    "name": "Voiced alveolar fricative",
+    "desc": "Voiced alveolar fricatives are consonantal sounds. The symbol in the International Phonetic Alphabet that represents these sounds depends on whether a sibilant or non-sibilant fricative is being described.The symbol for an alveolar sibilant is ⟨z⟩. The IPA letter ⟨z⟩ is not normally used for dental or postalveolar sibilants in narrow transcription unless modified by a diacritic.\nThe IPA symbol for an alveolar non-sibilant fricative is derived by means of diacritics; it can be ⟨ð̠⟩ or ⟨ɹ̝⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_alveolar_fricative"
+  },
+  "æ": {
+    "name": "Near-open front unrounded vowel",
+    "desc": "The near-open front unrounded vowel, or near-low front unrounded vowel, is a type of vowel sound. The symbol in the International Phonetic Alphabet that represents this sound is ⟨æ⟩, a lowercase of the ⟨Æ⟩ ligature. Both the symbol and the sound are commonly referred to as \"ash\".",
+    "url": "https://en.wikipedia.org/wiki/Near-open_front_unrounded_vowel"
+  },
+  "ç": {
+    "name": "Voiceless palatal fricative",
+    "desc": "A voiceless palatal fricative is a type of consonantal sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ç⟩. It is the non-sibilant equivalent of the voiceless alveolo-palatal fricative. Palatal fricatives are relatively rare phonemes, and only 5% of the world's languages have as a phoneme. The sound further occurs as an allophone of, or, in other languages, of in the vicinity of front vowels.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_palatal_fricative"
+  },
+  "ð": {
+    "name": "Voiced dental fricative",
+    "desc": "A voiced dental fricative is a consonant sound used in some spoken languages. It is familiar to most English-speakers as the \"th\" sound in \"father\".",
+    "url": "https://en.wikipedia.org/wiki/Voiced_dental_fricative"
+  },
+  "ø": {
+    "name": "Close-mid front rounded vowel",
+    "desc": "The close-mid front rounded vowel, or high-mid front rounded vowel, is a type of vowel sound used in some spoken languages.",
+    "url": "https://en.wikipedia.org/wiki/Close-mid_front_rounded_vowel"
+  },
+  "ħ": {
+    "name": "Voiceless pharyngeal fricative",
+    "desc": "A voiceless pharyngeal fricative is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is an h-bar, ⟨ħ⟩. In the transcription of Arabic, Berber as well as a few other scripts, it is often written ⟨Ḥ⟩, ⟨ḥ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_pharyngeal_fricative"
+  },
+  "ŋ": {
+    "name": "Voiced velar nasal",
+    "desc": "A voiced velar nasal, also known as eng, engma, or agma, is a type of consonantal sound used in some spoken languages. It is the sound of ng in English sing as well as n before velar consonants as in English and ink.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_velar_nasal"
+  },
+  "œ": {
+    "name": "Open-mid front rounded vowel",
+    "desc": "The open-mid front rounded vowel, or low-mid front rounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents the sound is ⟨œ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Open-mid_front_rounded_vowel"
+  },
+  "ǀ": {
+    "name": "Dental click",
+    "desc": "Dental clicks are a family of click consonants found, as constituents of words, only in Africa and in the Damin ritual jargon of Australia.",
+    "url": "https://en.wikipedia.org/wiki/Dental_click"
+  },
+  "ǁ": {
+    "name": "Lateral click",
+    "desc": "The lateral clicks are a family of click consonants found only in African languages. The clicking sound used by equestrians to urge on their horses is a lateral click, although it is not a speech sound in that context. Lateral clicks are found throughout southern Africa, for example in Zulu, and in some languages in Tanzania and Namibia. The place of articulation is not known to be contrastive in any language, and typically varies from alveolar to palatal.",
+    "url": "https://en.wikipedia.org/wiki/Lateral_click"
+  },
+  "ǂ": {
+    "name": "Palatal click",
+    "desc": "The palatal or palato-alveolar clicks are a family of click consonants found, as components of words, only in southern Africa. The tongue is nearly flat, and is pulled back rather than down as in the postalveolar clicks, making a sharper sound than those consonants. The tongue makes an extremely broad contact across the roof of the mouth, making correlation with the places of articulation of non-clicks difficult, but Ladefoged & Traill (1984:18) find that the primary place of articulation is the palate, and say that \"there is no doubt that should be described as a palatal sound\".",
+    "url": "https://en.wikipedia.org/wiki/Palatal_click"
+  },
+  "ǃ": {
+    "name": "Retroflex click",
+    "desc": "The retroflex clicks are a family of click consonants known only from the Central ǃKung language or dialect of Namibia. They are sub-apical retroflex and should not be confused with the more widespread postalveolar clicks, which have also been called \"retroflex\" due to their concave tongue shape and sometimes apical-retroflex articulation.",
+    "url": "https://en.wikipedia.org/wiki/Retroflex_click"
+  },
+  "ɐ": {
+    "name": "Near-open central vowel",
+    "desc": "The near-open central vowel, or near-low central vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɐ⟩, a rotated lowercase double-story a.",
+    "url": "https://en.wikipedia.org/wiki/Near-open_central_vowel"
+  },
+  "ɑ": {
+    "name": "Open back unrounded vowel",
+    "desc": "The open back unrounded vowel, or low back unrounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɑ⟩. The letter ⟨ɑ⟩ is called script a or handwritten a because it lacks the extra hook on top of a printed letter a, which corresponds to a different vowel, the open front unrounded vowel. Script a, which has a full length linear stroke on its right, should not be confused with turned script a, ⟨ɒ⟩, which has the linear stroke on its left and corresponds to a rounded version of this vowel, the open back rounded vowel.",
+    "url": "https://en.wikipedia.org/wiki/Open_back_unrounded_vowel"
+  },
+  "ɒ": {
+    "name": "Open back rounded vowel",
+    "desc": "The open back rounded vowel, or low back rounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɒ⟩. It is called Latin turned alpha being a rotated version of Latin alpha. It seems a \"turned script a\", being a rotated version of \"script (cursive) a\", which is the variant of a that lacks the extra stroke on top of a \"printed a\". Latin turned alpha a ⟨ɒ⟩ has its linear stroke on the left, whereas Latin alpha a ⟨ɑ⟩ has its linear stroke on the right.",
+    "url": "https://en.wikipedia.org/wiki/Open_back_rounded_vowel"
+  },
+  "ɓ": {
+    "name": "Voiced bilabial implosive",
+    "desc": "A voiced bilabial implosive is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɓ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_bilabial_implosive"
+  },
+  "ɔ": {
+    "name": "Open-mid back rounded vowel",
+    "desc": "The open-mid back rounded vowel, or low-mid back rounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɔ⟩. The IPA symbol is a turned letter c and both the symbol and the sound are commonly called \"open-o\". The name open-o represents the sound, in that it is like the sound represented by ⟨o⟩, the close-mid back rounded vowel, except it is more open. It also represents the symbol, which can be remembered as an o which has been \"opened\" by removing part of the closed circular shape.",
+    "url": "https://en.wikipedia.org/wiki/Open-mid_back_rounded_vowel"
+  },
+  "ɕ": {
+    "name": "Voiceless alveolo-palatal fricative",
+    "desc": "A voiceless alveolo-palatal sibilant fricative is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɕ⟩. Some Americanists may distinguish ⟨ɕ⟩ as an affricate, typically transcribed in IPA with t͡ɕ⟩, and instead use the symbol ⟨𝼞⟩ to represent the fricative that is referenced on this page. There is also a superscript ⟨ᶝ⟩ / ⟨𐞺⟩. It is the sibilant equivalent of the voiceless palatal fricative.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_alveolo-palatal_fricative"
+  },
+  "ɖ": {
+    "name": "Voiced retroflex plosive",
+    "desc": "A voiced retroflex plosive or stop is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ ɖ ⟩. Like all the retroflex consonants, the IPA symbol is formed by adding a rightward-pointing hook extending from the bottom of a d, the letter that is used for the corresponding alveolar consonant. Many South Asian languages, such as Hindi and Urdu, have a two-way contrast between plain and murmured.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_retroflex_plosive"
+  },
+  "ɗ": {
+    "name": "Voiced dental and alveolar implosives",
+    "desc": "A voiced alveolar implosive is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɗ ⟩. The IPA symbol is lowercase letter d with a rightward hook protruding from the upper right of the letter.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_dental_and_alveolar_implosives"
+  },
+  "ɘ": {
+    "name": "Close-mid central unrounded vowel",
+    "desc": "The close-mid central unrounded vowel, or high-mid central unrounded vowel, is a type of vowel sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɘ⟩. This is a mirrored letter e and should not be confused with the schwa ⟨ə⟩, which is a turned e. It was added to the IPA in 1993; before that, this vowel was transcribed ⟨ë⟩. Certain older sources transcribe this vowel ⟨ɤ̈⟩.",
+    "url": "https://en.wikipedia.org/wiki/Close-mid_central_unrounded_vowel"
+  },
+  "ə": {
+    "name": "Mid central vowel",
+    "desc": "The mid central vowel is a type of vowel sound, used in some spoken languages. A reduced mid central vowel is known as a schwa. The symbol in the International Phonetic Alphabet that represents either sound is ⟨ə⟩, a rotated lowercase letter e.",
+    "url": "https://en.wikipedia.org/wiki/Mid_central_vowel"
+  },
+  "ɛ": {
+    "name": "Open-mid front unrounded vowel",
+    "desc": "The open-mid front unrounded vowel, or low-mid front unrounded vowel, is a type of vowel sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is the Latin epsilon, a Latinized variant of the Greek lowercase epsilon, ⟨ɛ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Open-mid_front_unrounded_vowel"
+  },
+  "ɜ": {
+    "name": "Open-mid central unrounded vowel",
+    "desc": "The open-mid central unrounded vowel, or low-mid central unrounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɜ⟩. The IPA symbol is not the digit ⟨3⟩ or the Cyrillic small letter Ze (з). The symbol is instead a reversed Latinized variant of the lowercase epsilon, ɛ. The value was specified only in 1993; until then, ⟨ɜ⟩ was an alternative symbol for the mid central unrounded vowel.",
+    "url": "https://en.wikipedia.org/wiki/Open-mid_central_unrounded_vowel"
+  },
+  "ɞ": {
+    "name": "Open-mid central rounded vowel",
+    "desc": "The open-mid central rounded vowel, or low-mid central rounded vowel, is a vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɞ⟩. The symbol is called closed reversed epsilon. It was added to the IPA in 1993; before that, this vowel was transcribed ⟨ɔ̈⟩.",
+    "url": "https://en.wikipedia.org/wiki/Open-mid_central_rounded_vowel"
+  },
+  "ɟ": {
+    "name": "Voiced palatal plosive",
+    "desc": "A voiced palatal plosive or stop is a type of consonantal sound in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɟ⟩, a barred dotless ⟨j⟩ that was initially created by turning the type for a lowercase letter ⟨f⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_palatal_plosive"
+  },
+  "ɠ": {
+    "name": "Voiced velar implosive",
+    "desc": "A voiced velar implosive is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɠ ⟩. It is familiar to English speakers as the sound made when mimicking the 'gulping' of water.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_velar_implosive"
+  },
+  "ɢ": {
+    "name": "Voiced uvular plosive",
+    "desc": "A voiced uvular plosive or stop is a type of consonantal sound, used in some spoken languages. It is pronounced like a voiced velar plosive, except that the tongue makes contact not on the soft palate but on the uvula. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɢ⟩, a small capital version of the Latin letter g.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_uvular_plosive"
+  },
+  "ɣ": {
+    "name": "Voiced velar fricative",
+    "desc": "A voiced velar fricative is a type of consonantal sound that is used in various spoken languages. It is not found in most varieties of Modern English but existed in Old English. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɣ⟩, a Latinized variant of the Greek letter gamma, ⟨γ⟩, which has this sound in Modern Greek. It should not be confused with the graphically-similar ⟨ɤ⟩, the IPA symbol for a close-mid back unrounded vowel, which some writings use for the voiced velar fricative.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_velar_fricative"
+  },
+  "ɤ": {
+    "name": "Close-mid back unrounded vowel",
+    "desc": "The close-mid back unrounded vowel, or high-mid back unrounded vowel, is a type of vowel sound, used in some spoken languages. Its symbol in the International Phonetic Alphabet is ⟨ɤ⟩, called \"ram's horn.\" This symbol is distinct from the symbol for the voiced velar fricative, ⟨ɣ⟩, which has a descender, but some texts use this symbol for the voiced velar fricative.",
+    "url": "https://en.wikipedia.org/wiki/Close-mid_back_unrounded_vowel"
+  },
+  "ɥ": {
+    "name": "Voiced labial–palatal approximant",
+    "desc": "A voiced labial–palatal approximant is a type of consonantal sound, used in some spoken languages, for example, French huitième, read as [ɥitjɛm]. It has two constrictions in the vocal tract: with the tongue on the palate, and rounded at the lips. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɥ⟩, a rotated lowercase letter ⟨h⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_labial%E2%80%93palatal_approximant"
+  },
+  "ɦ": {
+    "name": "Voiced glottal fricative",
+    "desc": "A voiced glottal fricative, sometimes called a breathy-voiced glottal transition, is a type of sound used in some spoken languages. It is used by some English-speakers as the \"h\" sound in \"ahead\". The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɦ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_glottal_fricative"
+  },
+  "ɧ": {
+    "name": "Sj-sound",
+    "desc": "The sj-sound is a voiceless fricative phoneme found in the sound system of most dialects of Swedish. It has a variety of realisations, whose precise phonetic characterisations are a matter of debate, but which often feature distinct labialization.",
+    "url": "https://en.wikipedia.org/wiki/Sj-sound"
+  },
+  "ɨ": {
+    "name": "Close central unrounded vowel",
+    "desc": "The close central unrounded vowel, or high central unrounded vowel, is a type of vowel sound used in some languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɨ⟩, namely the lower-case letter i with a horizontal bar. Both the symbol and the sound are commonly referred to as barred i.",
+    "url": "https://en.wikipedia.org/wiki/Close_central_unrounded_vowel"
+  },
+  "ɪ": {
+    "name": "Near-close near-front unrounded vowel",
+    "desc": "The near-close near-front unrounded vowel, or near-high near-front unrounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɪ⟩. The International Phonetic Association advises serifs on the symbol's ends. Some sans-serif fonts do meet this typographic specification. Prior to 1989, there was an alternate IPA symbol for this sound, ⟨ɩ⟩ ; use of this symbol is no longer sanctioned by the IPA, though it may still be found in some modern writings.",
+    "url": "https://en.wikipedia.org/wiki/Near-close_near-front_unrounded_vowel"
+  },
+  "ɬ": {
+    "name": "Voiceless dental and alveolar lateral fricatives",
+    "desc": "A voiceless alveolar lateral fricative is a type of consonantal sound, used in some spoken languages.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_dental_and_alveolar_lateral_fricatives"
+  },
+  "ɭ": {
+    "name": "Voiced retroflex lateral approximant",
+    "desc": "A voiced retroflex lateral approximant is a type of consonantal sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɭ ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_retroflex_lateral_approximant"
+  },
+  "ɮ": {
+    "name": "Voiced dental and alveolar lateral fricatives",
+    "desc": "A voiced alveolar lateral fricative is a type of consonantal sound, used in some spoken languages.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_dental_and_alveolar_lateral_fricatives"
+  },
+  "ɯ": {
+    "name": "Close back unrounded vowel",
+    "desc": "The close back unrounded vowel, or high back unrounded vowel, is a type of vowel sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɯ⟩. Typographically, it is a turned letter ⟨m⟩.",
+    "url": "https://en.wikipedia.org/wiki/Close_back_unrounded_vowel"
+  },
+  "ɰ": {
+    "name": "Voiced velar approximant",
+    "desc": "A voiced velar approximant is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɰ⟩. In order to not imply that the approximant is spread as the vowel is, it may instead be transcribed ⟨ɣ̞⟩ or ⟨ɣ᫛⟩. This is the symbol of the voiced velar fricative ⟨ɣ⟩ with a lowering diacritic.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_velar_approximant"
+  },
+  "ɱ": {
+    "name": "Voiced labiodental nasal",
+    "desc": "A voiced labiodental nasal is a type of consonantal sound. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɱ⟩. The IPA symbol is a lowercase letter m with a leftward hook protruding from the lower right of the letter. Occasionally it is instead transcribed as an with a dental diacritic: ⟨m̪⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_labiodental_nasal"
+  },
+  "ɲ": {
+    "name": "Voiced palatal nasal",
+    "desc": "A voiced palatal nasal is a type of consonant used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɲ⟩, a lowercase letter n with a leftward-pointing tail protruding from the bottom of the left stem of the letter. The letter ⟨ɲ⟩ is visually similar to ⟨ɳ⟩, the symbol for the retroflex nasal, which has a rightward-pointing hook extending from the bottom of the right stem, and to ⟨ŋ⟩, the symbol for the velar nasal, which has a leftward-pointing hook extending from the bottom of the right stem.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_palatal_nasal"
+  },
+  "ɳ": {
+    "name": "Voiced retroflex nasal",
+    "desc": "A voiced retroflex nasal is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɳ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_retroflex_nasal"
+  },
+  "ɴ": {
+    "name": "Voiced uvular nasal",
+    "desc": "A voiced uvular nasal is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɴ⟩, a small capital version of the Latin letter n.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_uvular_nasal"
+  },
+  "ɵ": {
+    "name": "Close-mid central rounded vowel",
+    "desc": "The close-mid central rounded vowel, or high-mid central rounded vowel, is a type of vowel sound. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɵ⟩, a lowercase barred letter o. The value was specified only in 1993; until then, ⟨ɵ⟩ represented the mid central rounded vowel.",
+    "url": "https://en.wikipedia.org/wiki/Close-mid_central_rounded_vowel"
+  },
+  "ɶ": {
+    "name": "Open front rounded vowel",
+    "desc": "The open front rounded vowel, or low front rounded vowel, is a type of vowel sound that has not been confirmed to be phonetic in any spoken language, but is occasionally used in phonemic transcriptions for some Germanic languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɶ⟩, a small capital ⟨Œ⟩. It was added to the IPA vowel chart to balance the quadrilateral by filling in the remaining gap for a rounded equivalent of.",
+    "url": "https://en.wikipedia.org/wiki/Open_front_rounded_vowel"
+  },
+  "ɸ": {
+    "name": "Voiceless bilabial fricative",
+    "desc": "A voiceless bilabial fricative is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɸ⟩, a Latinised form of the Greek letter Phi.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_bilabial_fricative"
+  },
+  "ɹ": {
+    "name": "Voiced alveolar approximant",
+    "desc": "A voiced alveolar approximant is a type of consonantal sound used in some spoken languages. It is familiar to most English-speakers as the \"r\" sound in \"rose\". The symbol in the International Phonetic Alphabet that represents it is ⟨ɹ⟩, the lowercase Latin letter r rotated 180 degrees.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_alveolar_approximant"
+  },
+  "ɺ": {
+    "name": "Voiced alveolar lateral flap",
+    "desc": "A voiced alveolar lateral flap is a type of consonantal sound, found in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɺ⟩, a fusion of a rotated lowercase letter ⟨r⟩ with a letter ⟨l⟩. Approved in 1928, the symbol represented a sound intermediate between and or between and until 1979, when its value was redefined as an alveolar lateral flap.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_alveolar_lateral_flap"
+  },
+  "ɻ": {
+    "name": "Voiced retroflex approximant",
+    "desc": "A voiced retroflex approximant is a type of consonant used in some languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɻ⟩, a turned lowercase letter r with a rightward hook protruding from the lower right of the letter.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_retroflex_approximant"
+  },
+  "ɽ": {
+    "name": "Voiced retroflex flap",
+    "desc": "A voiced retroflex flap is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ɽ⟩, a letter r with a tail.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_retroflex_flap"
+  },
+  "ɾ": {
+    "name": "Voiced dental and alveolar taps and flaps",
+    "desc": "A voiced alveolar tap or flap is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents a dental, alveolar, or postalveolar tap or flap is ⟨ɾ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_dental_and_alveolar_taps_and_flaps"
+  },
+  "ʀ": {
+    "name": "Voiced uvular trill",
+    "desc": "A voiced uvular trill is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʀ⟩, a small capital version of the Latin letter r. This consonant is one of several collectively called guttural R.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_uvular_trill"
+  },
+  "ʁ": {
+    "name": "Voiced uvular fricative",
+    "desc": "A voiced uvular fricative is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʁ⟩, an inverted small uppercase letter ⟨ʀ⟩, or in broad transcription ⟨r⟩ if rhotic. This consonant is one of the several collectively called guttural R when found in European languages.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_uvular_fricative"
+  },
+  "ʂ": {
+    "name": "Voiceless retroflex fricative",
+    "desc": "A voiceless retroflex sibilant fricative is a type of consonantal sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʂ⟩ which is a Latin letter s combined with a retroflex hook. Like all the retroflex consonants, the IPA letter is formed by adding a rightward-pointing hook to the bottom of ⟨s⟩. A distinction can be made between laminal, apical, and sub-apical articulations. Only one language, Toda, appears to have more than one voiceless retroflex sibilant, and it distinguishes subapical palatal from apical postalveolar retroflex sibilants; that is, both the tongue articulation and the place of contact on the roof of the mouth are different.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_retroflex_fricative"
+  },
+  "ʃ": {
+    "name": "Voiceless postalveolar fricative",
+    "desc": "A voiceless postalveolar or palato-alveolar fricative is a type of consonantal sound used in many spoken languages. It is familiar to English-speakers as the \"sh\" sound in \"ship\".",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_postalveolar_fricative"
+  },
+  "ʄ": {
+    "name": "Voiced palatal implosive",
+    "desc": "A voiced palatal implosive is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ ʄ ⟩. Typographically, the IPA symbol is a dotless lowercase letter j with a horizontal stroke that was initially created by turning the type for a lowercase letter f and a rightward hook. A very similar-looking letter, ⟨ ƒ ⟩, is used in Ewe for.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_palatal_implosive"
+  },
+  "ʈ": {
+    "name": "Voiceless retroflex plosive",
+    "desc": "A voiceless retroflex plosive or stop is a type of consonantal sound, used in some spoken languages. This consonant is found as a phoneme mostly in two areas: South Asia and Australia.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_retroflex_plosive"
+  },
+  "ʉ": {
+    "name": "Close central rounded vowel",
+    "desc": "The close central rounded vowel, or high central rounded vowel, is a type of vowel sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʉ⟩. The sound is also commonly referred to by the name of its symbol, \"barred u\".",
+    "url": "https://en.wikipedia.org/wiki/Close_central_rounded_vowel"
+  },
+  "ʊ": {
+    "name": "Near-close near-back vowel",
+    "desc": "Near-close near-back vowel may refer to:The near-close near-back unrounded vowel or or \nThe near-close near-back rounded vowel \n\n",
+    "url": "https://en.wikipedia.org/wiki/Near-close_near-back_vowel"
+  },
+  "ʋ": {
+    "name": "Voiced labiodental approximant",
+    "desc": "A voiced labiodental approximant is a type of consonantal sound, used in some spoken languages. It is something between an English /w/ and /v/, pronounced with the teeth and lips held in the position used to articulate the letter V. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʋ⟩, a letter v with a leftward hook protruding from the upper right of the letter. In some sources, this letter indicates a bilabial approximant, though this is more accurately transcribed with an advanced diacritic, ⟨ʋ̟⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_labiodental_approximant"
+  },
+  "ʌ": {
+    "name": "Open-mid back unrounded vowel",
+    "desc": "The open-mid back unrounded vowel or low-mid back unrounded vowel is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʌ⟩, graphically a rotated lowercase \"v\". Both the symbol and the sound are commonly referred to as a \"wedge\", \"caret\" or \"hat\". In transcriptions for English, this symbol is commonly used for the near-open central unrounded vowel and in transcriptions for Danish, it is used for the open back rounded vowel.",
+    "url": "https://en.wikipedia.org/wiki/Open-mid_back_unrounded_vowel"
+  },
+  "ʍ": {
+    "name": "Voiceless labial–velar fricative",
+    "desc": "A voiceless labial–velar fricative, or more accurately a voiceless labialized velar fricative and sometimes analyzed as a voiceless labial–velar approximant, is a type of consonantal sound, used in spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨xʷ⟩ or, rather ambiguously, ⟨ʍ⟩. The letter ⟨ʍ⟩ was defined as a \"voiceless \" until 1979, when it was defined as a fricative with the place of articulation of the same way that is an approximant with the place of articulation of. The IPA Handbook describes ⟨ʍ⟩ as a \"fricative\" in the introduction, while a chapter within characterizes it as an \"approximant\".",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_labial%E2%80%93velar_fricative"
+  },
+  "ʎ": {
+    "name": "Voiced palatal lateral approximant",
+    "desc": "A voiced palatal lateral approximant is a type of consonantal sound used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʎ⟩, a rotated lowercase letter ⟨y⟩, not to be confused with the Greek lowercase letter lambda ⟨λ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_palatal_lateral_approximant"
+  },
+  "ʏ": {
+    "name": "Near-close near-front rounded vowel",
+    "desc": "The near-close near-front rounded vowel, or near-high near-front rounded vowel, is a type of vowel sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʏ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Near-close_near-front_rounded_vowel"
+  },
+  "ʐ": {
+    "name": "Voiced retroflex fricative",
+    "desc": "A voiced retroflex sibilant fricative is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʐ⟩. Like all the retroflex consonants, the IPA symbol is formed by adding a rightward-pointing hook extending from the bottom of a z.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_retroflex_fricative"
+  },
+  "ʑ": {
+    "name": "Voiced alveolo-palatal fricative",
+    "desc": "A voiced alveolo-palatal sibilant fricative is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʑ⟩. It is the sibilant equivalent of the voiced palatal fricative.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_alveolo-palatal_fricative"
+  },
+  "ʒ": {
+    "name": "Voiced postalveolar fricative",
+    "desc": "A voiced postalveolar or palato-alveolar fricative is a type of consonantal sound used in some spoken languages. It is familiar to many if not most English-speakers as the \"s\" sound in \"fusion\".",
+    "url": "https://en.wikipedia.org/wiki/Voiced_postalveolar_fricative"
+  },
+  "ʔ": {
+    "name": "Glottal stop",
+    "desc": "A glottal stop or glottal plosive is a type of consonantal sound used in many spoken languages, produced by obstructing airflow in the vocal tract or, more precisely, the glottis. It is familiar to English-speakers as the catch in the middle of \"uh-oh\". The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʔ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Glottal_stop"
+  },
+  "ʕ": {
+    "name": "Voiced pharyngeal fricative",
+    "desc": "A voiced pharyngeal fricative or approximant is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʕ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_pharyngeal_fricative"
+  },
+  "ʘ": {
+    "name": "Bilabial click",
+    "desc": "The bilabial clicks are a family of click consonants that sound like a smack of the lips. They are found as phonemes only in the small Tuu language family, in the ǂ’Amkoe language of Botswana, and in the extinct Damin ritual jargon of Australia. However, bilabial clicks are found paralinguistically for a kiss in various languages, including integrated into a greeting in the Hadza language of Tanzania, and as allophones of labial–velar stops in some West African languages, as of /mw/ in some of the languages neighboring Shona, such as Ndau and Tonga.",
+    "url": "https://en.wikipedia.org/wiki/Bilabial_click"
+  },
+  "ʙ": {
+    "name": "Voiced bilabial trill",
+    "desc": "A voiced bilabial trill is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents the sound is ⟨ʙ⟩, a small capital letter b.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_bilabial_trill"
+  },
+  "ʛ": {
+    "name": "Voiced uvular implosive",
+    "desc": "A voiced uvular implosive is an extremely rare type of consonantal sound. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʛ ⟩, a small capital letter G with a rightward pointing hook extending from the upper right of the letter.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_uvular_implosive"
+  },
+  "ʜ": {
+    "name": "Voiceless epiglottal fricative",
+    "desc": "A voiceless epiglottal fricative, or voiceless pharyngeal trill, is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʜ⟩, a small capital version of the Latin letter h. The glyph is homoglyphic with the lowercase Cyrillic letter En (н).",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_epiglottal_fricative"
+  },
+  "ʝ": {
+    "name": "Voiced palatal fricative",
+    "desc": "A voiced palatal fricative is a type of consonantal sound used in some spoken languages. The symbol in the International Phonetic Alphabet (IPA) that represents this sound is ⟨ʝ⟩. It is the non-sibilant equivalent of the voiced alveolo-palatal sibilant.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_palatal_fricative"
+  },
+  "ʟ": {
+    "name": "Voiced velar lateral approximant",
+    "desc": "A voiced velar lateral approximant is a type of consonantal sound, used as a distinct consonant in a very small number of spoken languages in the world. The symbol in the International Phonetic Alphabet that has represented this sound since 1989 is ⟨ʟ⟩, a small capital letter l.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_velar_lateral_approximant"
+  },
+  "ʡ": {
+    "name": "Epiglottal plosive",
+    "desc": "An epiglottal or pharyngeal plosive is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʡ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Epiglottal_plosive"
+  },
+  "ʢ": {
+    "name": "Voiced epiglottal fricative",
+    "desc": "A voiced epiglottal fricative, or voiced pharyngeal trill, is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is ⟨ʢ⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_epiglottal_fricative"
+  },
+  "ʰ": {
+    "name": "Aspirated consonant",
+    "desc": "In phonetics, aspiration is a strong burst of breath that accompanies either the release or, in the case of preaspiration, the closure of some obstruents. In English, aspirated consonants are allophones in complementary distribution with their unaspirated counterparts, but in some other languages, notably most North American languages, South Asian languages and East Asian languages, the difference is contrastive.",
+    "url": "https://en.wikipedia.org/wiki/Aspirated_consonant"
+  },
+  "ʲ": {
+    "name": "Palatalization (phonetics)",
+    "desc": "In phonetics, palatalization or palatization is a way of pronouncing a consonant in which part of the tongue is moved close to the hard palate. Consonants pronounced this way are said to be palatalized and are transcribed in the International Phonetic Alphabet by affixing a superscript j, ⟨ʲ⟩, to the base letter. Palatalization is not phonemic in English, but it is in Slavic languages such as Russian and Bulgarian; Uralic languages such as Estonian, Karelian, Veps, Enets and Mansi; Northwest Caucasian languages such as Abkhaz; and other various languages such as Irish, Lithuanian, Marshallese and Kashmiri.",
+    "url": "https://en.wikipedia.org/wiki/Palatalization_(phonetics)"
+  },
+  "ʷ": {
+    "name": "Labialization",
+    "desc": "Labialization is a secondary articulatory feature of sounds in some languages. Consonants pronounced this way are said to be labialized and are usually transcribed in the International Phonetic Alphabet by affixing a superscript w, ⟨ʷ⟩, to the base letter. Labialized sounds involve the lips while the remainder of the oral cavity produces another sound. The term is normally restricted to consonants. When vowels involve the lips, they are called rounded.",
+    "url": "https://en.wikipedia.org/wiki/Labialization"
+  },
+  "ʼ": {
+    "name": "Ejective consonant",
+    "desc": "In phonetics, ejective consonants are usually voiceless consonants that are pronounced with a glottalic egressive airstream. In the phonology of a particular language, ejectives may contrast with aspirated, voiced and tenuis consonants. Some languages have glottalized sonorants with creaky voice that pattern with ejectives phonologically, and other languages have ejectives that pattern with implosives, which has led to phonologists positing a phonological class of glottalic consonants, which includes ejectives.",
+    "url": "https://en.wikipedia.org/wiki/Ejective_consonant"
+  },
+  "ː": {
+    "name": "Length (phonetics)",
+    "desc": "In phonetics, length or quantity is a feature of sounds that have distinctively extended duration compared with other sounds. There are long vowels as well as long consonants.",
+    "url": "https://en.wikipedia.org/wiki/Length_(phonetics)"
+  },
+  "˞": {
+    "name": "R-colored vowel",
+    "desc": "An r-colored or rhotic vowel is a vowel that is modified in a way that results in a lowering in frequency of the third formant. R-colored vowels can be articulated in various ways: the tip or blade of the tongue may be turned up during at least part of the articulation of the vowel.",
+    "url": "https://en.wikipedia.org/wiki/R-colored_vowel"
+  },
+  "ˠ": {
+    "name": "Velarization",
+    "desc": "Velarization or velarisation is a secondary articulation of consonants by which the back of the tongue is raised toward the velum during the articulation of the consonant.\nIn the International Phonetic Alphabet, velarization is transcribed by one of four diacritics:A tilde or swung dash through the letter U+0334 ◌̴ COMBINING TILDE OVERLAY covers velarization, uvularization and pharyngealization, as in \nA superscript Latin gamma U+02E0 ˠ MODIFIER LETTER SMALL GAMMA after the letter standing for the velarized consonant, as in ⟨tˠ⟩ \nTo distinguish velarization from a velar fricative release, U+1D5A ᵚ MODIFIER LETTER SMALL TURNED M may be used instead of ⟨ˠ⟩, as in ⟨pᵚ⟩\nA superscript ⟨w⟩ U+02B7 ʷ MODIFIER LETTER SMALL W may be used to indicate simultaneous velarization with labialization, as in ⟨sʷ⟩, but is often used more broadly for protruded labialization, without specifying velarization.",
+    "url": "https://en.wikipedia.org/wiki/Velarization"
+  },
+  "ˤ": {
+    "name": "Pharyngealization",
+    "desc": "Pharyngealization or pharyngealisation is a secondary articulation of consonants or vowels by which the pharynx or epiglottis is constricted during the articulation of the sound.",
+    "url": "https://en.wikipedia.org/wiki/Pharyngealization"
+  },
+  "̃": {
+    "name": "Nasalization",
+    "desc": "In phonetics, nasalisation is the production of a sound while the velum is lowered, so that some air escapes through the nose during the production of the sound by the mouth. An archetypal nasal sound is.",
+    "url": "https://en.wikipedia.org/wiki/Nasalization"
+  },
+  "̚": {
+    "name": "No audible release",
+    "desc": "A stop consonant with no audible release, also known as an unreleased stop, checked stop or an applosive, is a plosive with no release burst: no audible indication of the end of its occlusion (hold). In the International Phonetic Alphabet, lack of an audible release is denoted with an upper-right corner diacritic after the consonant letter, as in:, ,.",
+    "url": "https://en.wikipedia.org/wiki/No_audible_release"
+  },
+  "̥": {
+    "name": "Voicelessness",
+    "desc": "In linguistics, voicelessness is the property of sounds being pronounced without the larynx vibrating. Phonologically, it is a type of phonation, which contrasts with other states of the larynx, but some object that the word phonation implies voicing and that voicelessness is the lack of phonation.",
+    "url": "https://en.wikipedia.org/wiki/Voicelessness"
+  },
+  "̩": {
+    "name": "Syllabic consonant",
+    "desc": "A syllabic consonant, or vocalic consonant, is a consonant that forms the nucleus of a syllable on its own, like the m, n and l in some pronunciations of the English words rhythm, button and awful, respectively. To represent it, the understroke diacritic in the International Phonetic Alphabet is used, ⟨U+0329 ◌̩ COMBINING VERTICAL LINE BELOW⟩. It may be instead represented by an overstroke, ⟨U+030D ◌̍ COMBINING VERTICAL LINE ABOVE⟩ if the symbol that it modifies has a descender, such as in.",
+    "url": "https://en.wikipedia.org/wiki/Syllabic_consonant"
+  },
+  "̪": {
+    "name": "Dental consonant",
+    "desc": "A dental consonant is a consonant articulated with the tongue against the upper teeth, such as, . In some languages, dentals are distinguished from other groups, such as alveolar consonants, in which the tongue contacts the gum ridge. Dental consonants share acoustic similarity and in the Latin script are generally written with consistent symbols.",
+    "url": "https://en.wikipedia.org/wiki/Dental_consonant"
+  },
+  "̴": {
+    "name": "Velarization",
+    "desc": "Velarization or velarisation is a secondary articulation of consonants by which the back of the tongue is raised toward the velum during the articulation of the consonant.\nIn the International Phonetic Alphabet, velarization is transcribed by one of four diacritics:A tilde or swung dash through the letter U+0334 ◌̴ COMBINING TILDE OVERLAY covers velarization, uvularization and pharyngealization, as in \nA superscript Latin gamma U+02E0 ˠ MODIFIER LETTER SMALL GAMMA after the letter standing for the velarized consonant, as in ⟨tˠ⟩ \nTo distinguish velarization from a velar fricative release, U+1D5A ᵚ MODIFIER LETTER SMALL TURNED M may be used instead of ⟨ˠ⟩, as in ⟨pᵚ⟩\nA superscript ⟨w⟩ U+02B7 ʷ MODIFIER LETTER SMALL W may be used to indicate simultaneous velarization with labialization, as in ⟨sʷ⟩, but is often used more broadly for protruded labialization, without specifying velarization.",
+    "url": "https://en.wikipedia.org/wiki/Velarization"
+  },
+  "̺": {
+    "name": "Apical consonant",
+    "desc": "An apical consonant is a phone produced by obstructing the air passage with the tip of the tongue (apex) in conjunction with upper articulators from lips to postalveolar, and possibly prepalatal. It contrasts with laminal consonants, which are produced by creating an obstruction with the blade of the tongue, just behind the tip. Sometimes apical is used exclusively for an articulation that involves only the tip of the tongue and apicolaminal for an articulation that involves both the tip and the blade of the tongue. However, the distinction is not always made and the latter one may be called simply apical, especially when describing an apical dental articulation. As there is some laminal contact in the alveolar region, the apicolaminal dental consonants are also labelled as denti-alveolar.",
+    "url": "https://en.wikipedia.org/wiki/Apical_consonant"
+  },
+  "β": {
+    "name": "Voiced bilabial fricative",
+    "desc": "A voiced bilabial fricative is a type of consonantal sound, used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is either a Latin or Greek-style beta, ⟨β⟩.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_bilabial_fricative"
+  },
+  "θ": {
+    "name": "Voiceless dental fricative",
+    "desc": "A voiceless dental non-sibilant fricative is a type of consonantal sound used in some spoken languages. It is familiar to most English-speakers as the \"th\" sound in \"think\".",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_dental_fricative"
+  },
+  "χ": {
+    "name": "Voiceless uvular fricative",
+    "desc": "A voiceless uvular fricative is a type of consonantal sound that is used in some spoken languages. The symbol in the International Phonetic Alphabet that represents this sound is either a Latin or Greek-style chi, ⟨χ⟩. The historical IPA symbol for this sound was ⟨ᴚ⟩, a turned small capital R, and was officially changed to ⟨χ⟩ in 1928. In Americanist phonetic notation the sound is represented by ⟨x̣⟩, or sometimes by ⟨x̌⟩. In broad transcription it may be transcribed ⟨x⟩, or ⟨r⟩ if rhotic.",
+    "url": "https://en.wikipedia.org/wiki/Voiceless_uvular_fricative"
+  },
+  "ᶑ": {
+    "name": "Voiced retroflex implosive",
+    "desc": "A voiced retroflex implosive is a type of consonantal sound used in some spoken languages. Wadiyara Koli phonemically distinguishes it from the alveolar. Sindhi has an implosive that varies between dental and retroflex articulation, while Oromo, Saraiki and Ngad'a have but not.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_retroflex_implosive"
+  },
+  "ⱱ": {
+    "name": "Voiced labiodental flap",
+    "desc": "In phonetics, a voiced labiodental flap is a speech sound found primarily in languages of Central Africa, such as Kera and Mangbetu. It has also been reported in the Austronesian language Sika. It is one of the few non-rhotic flaps. The sound begins with the lower lip placed behind the upper teeth. The lower lip is then flipped outward, striking the upper teeth in passing.",
+    "url": "https://en.wikipedia.org/wiki/Voiced_labiodental_flap"
+  }
+}
