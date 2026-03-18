@@ -5,7 +5,8 @@ const DB_NAME = "onnx-model-cache";
 const STORE_NAME = "models";
 const PARTIAL_STORE_NAME = "partial-downloads";
 const HISTORY_STORE = "history";
-const DB_VERSION = 3;
+const AUDIO_STORE = "history-audio"; // audio stored separately to keep history store lean
+const DB_VERSION = 4;
 
 export interface HistoryEntry {
   id?: number;
@@ -30,6 +31,9 @@ function openDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(HISTORY_STORE)) {
         db.createObjectStore(HISTORY_STORE, { keyPath: 'id', autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains(AUDIO_STORE)) {
+        db.createObjectStore(AUDIO_STORE);
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -132,13 +136,47 @@ export async function getRecording(): Promise<ArrayBuffer | null> {
   });
 }
 
-export async function saveHistoryEntry(entry: Omit<HistoryEntry, 'id'>): Promise<void> {
+/**
+ * Save a history entry.  Audio (audioBuf) is stored separately in AUDIO_STORE
+ * so that large binary data cannot cause the lightweight metadata write to fail.
+ * Returns the auto-assigned entry id.
+ */
+export async function saveHistoryEntry(entry: Omit<HistoryEntry, 'id'>): Promise<number> {
+  const { audioBuf, ...meta } = entry;
+  const db = await openDB();
+
+  // Persist metadata; use tx.oncomplete so we only resolve after the commit is durable.
+  const id = await new Promise<number>((resolve, reject) => {
+    const tx = db.transaction(HISTORY_STORE, "readwrite");
+    const req = tx.objectStore(HISTORY_STORE).add(meta);
+    tx.oncomplete = () => resolve(req.result as number);
+    tx.onerror   = () => reject(tx.error);
+    tx.onabort   = () => reject(new Error('Transaction aborted'));
+  });
+
+  // Persist audio separately; failure here is non-fatal — metadata is already committed.
+  if (audioBuf) {
+    const db2 = await openDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db2.transaction(AUDIO_STORE, "readwrite");
+      tx.objectStore(AUDIO_STORE).put(audioBuf, id);
+      tx.oncomplete = () => resolve();
+      tx.onerror   = () => reject(tx.error);
+      tx.onabort   = () => reject(new Error('Audio transaction aborted'));
+    }).catch(() => { /* non-fatal */ });
+  }
+
+  return id;
+}
+
+/** Load audio for a history entry saved under v4+ schema. */
+export async function loadHistoryAudio(id: number): Promise<ArrayBuffer | null> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(HISTORY_STORE, "readwrite");
-    const req = tx.objectStore(HISTORY_STORE).add(entry);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+    const tx = db.transaction(AUDIO_STORE, "readonly");
+    const req = tx.objectStore(AUDIO_STORE).get(id);
+    req.onsuccess = () => resolve((req.result as ArrayBuffer) ?? null);
+    req.onerror   = () => reject(req.error);
   });
 }
 
@@ -148,7 +186,7 @@ export async function loadHistory(): Promise<HistoryEntry[]> {
     const tx = db.transaction(HISTORY_STORE, "readonly");
     const req = tx.objectStore(HISTORY_STORE).getAll();
     req.onsuccess = () => resolve((req.result as HistoryEntry[]).reverse()); // newest first
-    req.onerror = () => reject(req.error);
+    req.onerror   = () => reject(req.error);
   });
 }
 

@@ -1,7 +1,7 @@
 import type { WorkerInMsg, WorkerOutMsg, FrameOut, BeamOut } from './types.js';
 import { MODELS, modelUrl } from './types.js';
 import { isModelCached, getPartialDownload, saveRecording, getRecording,
-         pruneStalePartials, saveHistoryEntry, loadHistory } from './model-cache.js';
+         pruneStalePartials, saveHistoryEntry, loadHistory, loadHistoryAudio } from './model-cache.js';
 import type { HistoryEntry } from './model-cache.js';
 import { isActiveFrame, findActiveRange } from './frame-utils.js';
 import ipaDescriptions from './ipa-descriptions.json';
@@ -372,13 +372,11 @@ function renderHistory(entries: HistoryEntry[]) {
       <td class="hist-model">${escHtml(e.modelId)}</td>
       <td class="hist-ipa">${escHtml(e.transcript || '—')}</td>
       <td class="hist-load"></td>`;
-    if (e.audioBuf) {
-      const btn = document.createElement('button');
-      btn.textContent = 'Load';
-      btn.className = 'load-hist-btn';
-      btn.addEventListener('click', () => loadHistoryEntry(e));
-      tr.querySelector('.hist-load')!.appendChild(btn);
-    }
+    const btn = document.createElement('button');
+    btn.textContent = 'Load';
+    btn.className = 'load-hist-btn';
+    btn.addEventListener('click', () => loadHistoryEntry(e));
+    tr.querySelector('.hist-load')!.appendChild(btn);
     tbody.appendChild(tr);
   }
   table.appendChild(tbody);
@@ -387,8 +385,12 @@ function renderHistory(entries: HistoryEntry[]) {
 }
 
 async function loadHistoryEntry(e: HistoryEntry) {
-  if (!e.audioBuf) return;
-  const blob = new Blob([e.audioBuf], { type: 'audio/webm' });
+  // Inline audioBuf: present on entries saved with the old v3 schema.
+  // New entries (v4+) have audio in the separate AUDIO_STORE, keyed by entry id.
+  const audioBuf = e.audioBuf
+    ?? (e.id !== undefined ? await loadHistoryAudio(e.id).catch(() => null) : null);
+  if (!audioBuf) { setStatus('No audio stored for this entry.'); return; }
+  const blob = new Blob([audioBuf], { type: 'audio/webm' });
   if (lastBlobUrl) URL.revokeObjectURL(lastBlobUrl);
   lastBlobUrl = URL.createObjectURL(blob);
   playbackAudio.src = lastBlobUrl;
