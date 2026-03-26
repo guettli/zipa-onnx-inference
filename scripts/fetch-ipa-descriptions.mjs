@@ -9,24 +9,24 @@ import { writeFileSync } from 'fs';
 // All tokens from src/tokens.ts
 const TOKENS = [
   '<blk>', '<sos/eos>', '<unk>', '▁',
-  'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
-  'æ','ç','ð','ø','ħ','ŋ','œ',
-  'ǀ','ǁ','ǂ','ǃ',
-  'ɐ','ɑ','ɒ','ɓ','ɔ','ɕ','ɖ','ɗ','ɘ','ə','ɛ','ɜ','ɞ','ɟ','ɠ','ɢ','ɣ','ɤ','ɥ','ɦ','ɧ','ɨ','ɪ',
-  'ɬ','ɭ','ɮ','ɯ','ɰ','ɱ','ɲ','ɳ','ɴ','ɵ','ɶ','ɸ','ɹ','ɺ','ɻ','ɽ','ɾ',
-  'ʀ','ʁ','ʂ','ʃ','ʄ','ʈ','ʉ','ʊ','ʋ','ʌ','ʍ','ʎ','ʏ','ʐ','ʑ','ʒ','ʔ','ʕ','ʘ','ʙ','ʛ','ʜ','ʝ','ʟ','ʡ','ʢ',
-  'ʰ','ʲ','ʷ','ʼ','ː','˞','ˠ','ˤ',
-  '̃','̚','̥','̩','̪','̴','̺',
-  'β','θ','χ','ᶑ','ⱱ',
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  'æ', 'ç', 'ð', 'ø', 'ħ', 'ŋ', 'œ',
+  'ǀ', 'ǁ', 'ǂ', 'ǃ',
+  'ɐ', 'ɑ', 'ɒ', 'ɓ', 'ɔ', 'ɕ', 'ɖ', 'ɗ', 'ɘ', 'ə', 'ɛ', 'ɜ', 'ɞ', 'ɟ', 'ɠ', 'ɢ', 'ɣ', 'ɤ', 'ɥ', 'ɦ', 'ɧ', 'ɨ', 'ɪ',
+  'ɬ', 'ɭ', 'ɮ', 'ɯ', 'ɰ', 'ɱ', 'ɲ', 'ɳ', 'ɴ', 'ɵ', 'ɶ', 'ɸ', 'ɹ', 'ɺ', 'ɻ', 'ɽ', 'ɾ',
+  'ʀ', 'ʁ', 'ʂ', 'ʃ', 'ʄ', 'ʈ', 'ʉ', 'ʊ', 'ʋ', 'ʌ', 'ʍ', 'ʎ', 'ʏ', 'ʐ', 'ʑ', 'ʒ', 'ʔ', 'ʕ', 'ʘ', 'ʙ', 'ʛ', 'ʜ', 'ʝ', 'ʟ', 'ʡ', 'ʢ',
+  'ʰ', 'ʲ', 'ʷ', 'ʼ', 'ː', '˞', 'ˠ', 'ˤ',
+  '̃', '̚', '̥', '̩', '̪', '̴', '̺',
+  'β', 'θ', 'χ', 'ᶑ', 'ⱱ',
 ];
 
 // Map symbol → Wikipedia article title (English)
 // null = internal CTC token, no phonetics article
 const WIKI_TITLE = {
-  '<blk>':     null,
+  '<blk>': null,
   '<sos/eos>': null,
-  '<unk>':     null,
-  '▁':         'Word_boundary',
+  '<unk>': null,
+  '▁': 'Word_boundary',
 
   // Basic Latin IPA usage
   'a': 'Open_front_unrounded_vowel',
@@ -154,13 +154,13 @@ const WIKI_TITLE = {
   'ˤ': 'Pharyngealization',
 
   // Combining diacritics
-  '̃':  'Nasalization',
-  '̚':  'No_audible_release',
-  '̥':  'Voicelessness',
-  '̩':  'Syllabic_consonant',
-  '̪':  'Dental_consonant',
-  '̴':  'Velarization',
-  '̺':  'Apical_consonant',
+  '̃': 'Nasalization',
+  '̚': 'No_audible_release',
+  '̥': 'Voicelessness',
+  '̩': 'Syllabic_consonant',
+  '̪': 'Dental_consonant',
+  '̴': 'Velarization',
+  '̺': 'Apical_consonant',
 
   // Greek letters used in IPA
   'β': 'Voiced_bilabial_fricative',
@@ -194,7 +194,7 @@ async function fetchSummary(title) {
   return {
     name: data.title,
     desc: data.extract ?? '',
-    url:  data.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${title}`,
+    url: data.content_urls?.desktop?.page ?? `https://en.wikipedia.org/wiki/${title}`,
   };
 }
 
@@ -229,7 +229,7 @@ for (const sym of TOKENS) {
     result[sym] = {
       name: decoded,
       desc: '',
-      url:  `https://en.wikipedia.org/wiki/${title}`,
+      url: `https://en.wikipedia.org/wiki/${title}`,
     };
     fail++;
   }

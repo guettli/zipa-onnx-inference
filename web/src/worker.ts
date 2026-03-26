@@ -1,94 +1,139 @@
 /**
- * Web Worker: handles model download, ONNX inference, beam search.
- * Runs off the main thread so the UI stays responsive.
+ * Web Worker: model download, ONNX inference, CTC beam search.
  *
- * Option A: ort.env.wasm.numThreads = 1  → no SharedArrayBuffer required.
+ * Memory strategy
+ * ───────────────
+ * 1. Models are stored in the Cache Storage API (not IndexedDB).
+ *    The Service Worker (sw.js) serves them at same-origin proxy URLs so that
+ *    ort.InferenceSession.create(url) can fetch the model without our code ever
+ *    holding a 65 MB ArrayBuffer in the JS heap simultaneously with the WASM copy.
+ *
+ * 2. Download is fully streaming via TransformStream → cache.put().
+ *    Peak in-flight memory during download ≈ one network chunk (≤ 64 KB), not 65 MB.
+ *
+ * 3. Logits are processed frame-by-frame with two reusable buffers.
+ *    No Float32Array[] of all frames is kept — only blankProbs[] (1 float/frame).
+ *
+ * 4. Single-threaded WASM (numThreads=1) — no SharedArrayBuffer required.
  */
 import * as ort from 'onnxruntime-web';
 import { extractFbank } from '../../src/fbank.js';
 import { BLANK_ID, ID_TO_TOKEN } from '../../src/tokens.js';
-import { getModelFromCache, saveModelToCache, getPartialDownload, savePartialDownload, clearPartialDownload } from './model-cache.js';
+import {
+  getModelFromCache, deleteModelFromCache,
+  getPartialDownload, savePartialDownload, clearPartialDownload,
+} from './model-cache.js';
 import type { ModelInfo, WorkerInMsg, WorkerOutMsg, FrameOut, BeamOut } from './types.js';
-import { MODELS, modelUrl } from './types.js';
+import { MODELS, modelUrl, modelProxyUrl } from './types.js';
 
-// ── Option A: single-threaded, no SharedArrayBuffer needed ────────────────────
+// ── ONNX Runtime config ───────────────────────────────────────────────────────
 ort.env.wasm.numThreads = 1;
-// Load WASM files from CDN so we don't have to bundle them.
-ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.2/dist/';
+ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
 
 // ── State ─────────────────────────────────────────────────────────────────────
-
 let session: ort.InferenceSession | null = null;
 let loadedModelId: string | null = null;
 let cancelled = false;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const MODEL_CACHE_NAME = 'zipa-models-v1';
 
-/** Download with resumable partial saves every 5 MB. */
-async function downloadWithProgress(url: string, onProgress: (pct: number, mb: number, total: number) => void): Promise<ArrayBuffer> {
-  const partial = await getPartialDownload(url);
-  const headers: Record<string, string> = {};
-  let received = partial ? partial.data.byteLength : 0;
-  if (partial) headers['Range'] = `bytes=${received}-`;
+// ── Cache Storage helpers ─────────────────────────────────────────────────────
 
+async function isModelInCacheStorage(proxyUrl: string): Promise<boolean> {
+  if (!('caches' in self)) return false;
+  const cache = await caches.open(MODEL_CACHE_NAME);
+  return (await cache.match(proxyUrl)) != null;
+}
+
+/**
+ * Stream-download a model from HuggingFace into Cache Storage.
+ * Peak JS heap ≈ one network chunk (≤ 64 KB) — no full ArrayBuffer needed.
+ *
+ * Falls back to chunk-accumulation if TransformStream is unavailable (very old Safari).
+ */
+async function downloadModelToCache(
+  hfUrl: string,
+  proxyUrl: string,
+  onProgress: (pct: number, mbReceived: number, mbTotal: number) => void,
+): Promise<void> {
   let resp: Response;
   try {
-    resp = await fetch(url, { headers });
+    resp = await fetch(hfUrl);
   } catch {
-    throw new Error(`Network error — check your internet connection and try again.`);
+    throw new Error('Network error — check your internet connection and try again.');
   }
-  if (resp.status === 404) throw new Error(`Model file not found (404). The model may have moved on Hugging Face.`);
-  if (resp.status === 429) throw new Error(`Rate limited by Hugging Face (429). Please wait a moment and try again.`);
-  if (!resp.ok && resp.status !== 206) throw new Error(`Download failed (HTTP ${resp.status}). Try reloading the page.`);
+  if (resp.status === 404) throw new Error('Model file not found (404). The model may have moved on Hugging Face.');
+  if (resp.status === 429) throw new Error('Rate limited by Hugging Face (429). Please wait a moment and try again.');
+  if (!resp.ok) throw new Error(`Download failed (HTTP ${resp.status}). Try reloading the page.`);
 
-  const total = partial
-    ? partial.total
-    : parseInt(resp.headers.get('content-length') ?? '0', 10);
+  const total = parseInt(resp.headers.get('content-length') ?? '0', 10);
+  let received = 0;
 
-  const reader = resp.body!.getReader();
-  const chunks: Uint8Array[] = partial ? [new Uint8Array(partial.data)] : [];
-  let lastSave = received;
+  const cache = await caches.open(MODEL_CACHE_NAME);
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    received += value.byteLength;
-    onProgress(total > 0 ? received / total : 0, received / 1e6, total / 1e6);
+  if (typeof TransformStream !== 'undefined' && resp.body) {
+    // ── Streaming path: no ArrayBuffer in JS heap ─────────────────────────
+    const ts = new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        received += chunk.byteLength;
+        onProgress(total > 0 ? received / total : 0, received / 1e6, total / 1e6);
+        controller.enqueue(chunk);
+      },
+    });
 
-    // Save partial every 5 MB
-    if (received - lastSave > 5 * 1e6) {
-      const merged = mergeChunks(chunks, received);
-      await savePartialDownload(url, { data: merged, total });
-      lastSave = received;
+    await cache.put(
+      proxyUrl,
+      new Response(resp.body.pipeThrough(ts), {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          ...(total > 0 ? { 'Content-Length': String(total) } : {}),
+        },
+      }),
+    );
+  } else {
+    // ── Fallback: accumulate chunks then cache ────────────────────────────
+    const reader = resp.body!.getReader();
+    const chunks: Uint8Array[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.byteLength;
+      onProgress(total > 0 ? received / total : 0, received / 1e6, total / 1e6);
     }
+    const merged = new Uint8Array(received);
+    let offset = 0;
+    for (const c of chunks) { merged.set(c, offset); offset += c.byteLength; }
+    await cache.put(proxyUrl, new Response(merged.buffer, {
+      headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': String(received) },
+    }));
   }
-
-  const full = mergeChunks(chunks, received);
-  await clearPartialDownload(url);
-  return full;
 }
 
-function mergeChunks(chunks: Uint8Array[], totalBytes: number): ArrayBuffer {
-  const out = new Uint8Array(totalBytes);
-  let offset = 0;
-  for (const c of chunks) { out.set(c, offset); offset += c.byteLength; }
-  return out.buffer;
+/**
+ * Migrate a legacy model from IndexedDB to Cache Storage, then delete from IndexedDB.
+ * This is a one-time migration; subsequent loads use the Cache Storage path.
+ */
+async function migrateFromIndexedDB(hfUrl: string, proxyUrl: string): Promise<void> {
+  const buf = await getModelFromCache(hfUrl); // legacy IndexedDB read
+  if (!buf) return;
+  const cache = await caches.open(MODEL_CACHE_NAME);
+  await cache.put(proxyUrl, new Response(buf, {
+    headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': String(buf.byteLength) },
+  }));
+  await deleteModelFromCache(hfUrl).catch(() => {}); // clean up IndexedDB
 }
 
-// ── Softmax ───────────────────────────────────────────────────────────────────
+// ── Session creation ──────────────────────────────────────────────────────────
 
-function softmax(logits: Float32Array): Float32Array {
-  let max = -Infinity;
-  for (let i = 0; i < logits.length; i++) if (logits[i] > max) max = logits[i];
-  const exp = new Float32Array(logits.length);
-  let sum = 0;
-  for (let i = 0; i < logits.length; i++) { exp[i] = Math.exp(logits[i] - max); sum += exp[i]; }
-  for (let i = 0; i < logits.length; i++) exp[i] /= sum;
-  return exp;
+/** Always use single-threaded WASM — predictable, no SharedArrayBuffer required. */
+async function createSession(uriOrBuffer: string | ArrayBuffer): Promise<ort.InferenceSession> {
+  return ort.InferenceSession.create(uriOrBuffer as string, { executionProviders: ['wasm'] });
 }
 
-// ── CTC beam search (same algorithm as Node.js src/inference.ts) ──────────────
+// ── Log-space helpers ─────────────────────────────────────────────────────────
+
+const LOG_ZERO = -Infinity;
 
 function logSumExp(a: number, b: number): number {
   if (!isFinite(a)) return b;
@@ -96,6 +141,8 @@ function logSumExp(a: number, b: number): number {
   const max = Math.max(a, b);
   return max + Math.log1p(Math.exp(Math.min(a, b) - max));
 }
+
+// ── Beam search (streaming, one frame at a time) ──────────────────────────────
 
 interface BeamState { logPb: number; logPnb: number; lastId: number }
 
@@ -110,96 +157,58 @@ const EMITTABLE: Array<{ id: number; out: string }> = (() => {
   return result;
 })();
 
-function ctcBeamSearch(frameProbs: Float32Array[], beamWidth = 10): BeamOut[] {
-  const LOG_ZERO = -Infinity;
-  let beamMap = new Map<string, BeamState>([
-    ['', { logPb: 0, logPnb: LOG_ZERO, lastId: -1 }],
-  ]);
+function beamSearchStep(
+  beamMap: Map<string, BeamState>,
+  logP: Float64Array,
+  beamWidth: number,
+): Map<string, BeamState> {
+  const next = new Map<string, BeamState>();
+  const add = (key: string, lastId: number, dPb: number, dPnb: number) => {
+    const ex = next.get(key);
+    if (!ex) { next.set(key, { logPb: dPb, logPnb: dPnb, lastId }); }
+    else { ex.logPb = logSumExp(ex.logPb, dPb); ex.logPnb = logSumExp(ex.logPnb, dPnb); }
+  };
 
-  for (const probs of frameProbs) {
-    const logP = new Float64Array(probs.length);
-    for (let i = 0; i < probs.length; i++) logP[i] = probs[i] > 0 ? Math.log(probs[i]) : LOG_ZERO;
-
-    const next = new Map<string, BeamState>();
-    const add = (key: string, lastId: number, dPb: number, dPnb: number) => {
-      const ex = next.get(key);
-      if (!ex) { next.set(key, { logPb: dPb, logPnb: dPnb, lastId }); }
-      else { ex.logPb = logSumExp(ex.logPb, dPb); ex.logPnb = logSumExp(ex.logPnb, dPnb); }
-    };
-
-    for (const [prefix, { logPb, logPnb, lastId }] of beamMap) {
-      const logPTotal = logSumExp(logPb, logPnb);
-      add(prefix, lastId, logPTotal + logP[BLANK_ID], LOG_ZERO);
-      for (const { id, out } of EMITTABLE) {
-        const logPToken = logP[id];
-        if (id === lastId) {
-          add(prefix + out, id, LOG_ZERO, logPb + logPToken);
-          add(prefix, lastId, LOG_ZERO, logPnb + logPToken);
-        } else {
-          add(prefix + out, id, LOG_ZERO, logPTotal + logPToken);
-        }
+  for (const [prefix, { logPb, logPnb, lastId }] of beamMap) {
+    const logPTotal = logSumExp(logPb, logPnb);
+    add(prefix, lastId, logPTotal + logP[BLANK_ID], LOG_ZERO);
+    for (const { id, out } of EMITTABLE) {
+      const logPToken = logP[id];
+      if (id === lastId) {
+        add(prefix + out, id, LOG_ZERO, logPb + logPToken);
+        add(prefix, lastId, LOG_ZERO, logPnb + logPToken);
+      } else {
+        add(prefix + out, id, LOG_ZERO, logPTotal + logPToken);
       }
     }
-
-    beamMap = new Map(
-      [...next.entries()]
-        .sort((a, b) => logSumExp(b[1].logPb, b[1].logPnb) - logSumExp(a[1].logPb, a[1].logPnb))
-        .slice(0, beamWidth),
-    );
   }
 
+  return new Map(
+    [...next.entries()]
+      .sort((a, b) => logSumExp(b[1].logPb, b[1].logPnb) - logSumExp(a[1].logPb, a[1].logPnb))
+      .slice(0, beamWidth),
+  );
+}
+
+function finalizeBeams(beamMap: Map<string, BeamState>): BeamOut[] {
   const raw = [...beamMap.entries()]
     .map(([text, { logPb, logPnb }]) => ({ text: text.trim(), rawProb: Math.exp(logSumExp(logPb, logPnb)) }))
     .sort((a, b) => b.rawProb - a.rawProb);
-
   const total = raw.reduce((s, b) => s + b.rawProb, 0) || 1;
   return raw.map(b => ({ text: b.text, prob: b.rawProb / total }));
 }
 
-// ── Transcript with word boundaries ──────────────────────────────────────────
+// ── Gap-space insertion ───────────────────────────────────────────────────────
 
-/**
- * Standard CTC greedy decode, including ▁ as spaces.
- * Returns (text, charFrames) where charFrames[i] is the frame index of text[i].
- */
-function ctcGreedyDecode(frameProbs: Float32Array[]): { text: string; charFrames: number[] } {
-  let text = '';
-  const charFrames: number[] = [];
-  let lastId = -1;
-  for (let f = 0; f < frameProbs.length; f++) {
-    const probs = frameProbs[f];
-    let maxId = 0;
-    for (let i = 1; i < probs.length; i++) if (probs[i] > probs[maxId]) maxId = i;
-    if (maxId === BLANK_ID) { lastId = -1; continue; }
-    if (maxId === lastId) continue;
-    lastId = maxId;
-    const sym = ID_TO_TOKEN[maxId];
-    if (!sym || sym.startsWith('<')) continue;
-    if (sym === '▁') {
-      // Only add a space if there isn't already one at the end.
-      if (text.length > 0 && !text.endsWith(' ')) { text += ' '; charFrames.push(f); }
-    } else {
-      text += sym;
-      charFrames.push(f);
-    }
-  }
-  return { text: text.trim(), charFrames: text.trimStart() === text ? charFrames : charFrames.slice(text.length - text.trimStart().length) };
-}
-
-/**
- * If the greedy text has no spaces, insert them at blank-dominant gaps
- * between consecutive emitted characters (≥ GAP_FRAMES consecutive frames
- * where blank probability > 0.5).
- */
-function insertGapSpaces(frameProbs: Float32Array[], text: string, charFrames: number[]): string {
+function insertGapSpaces(blankProbs: Float32Array, text: string, charFrames: number[]): string {
   if (text.includes(' ')) return text;
-  const GAP_FRAMES = 5; // ~200ms at 40ms/frame
+  const GAP_FRAMES = 5;
   let result = '';
   for (let i = 0; i < text.length; i++) {
     if (i > 0 && charFrames[i] !== undefined && charFrames[i - 1] !== undefined) {
       let blankRun = 0;
       for (let f = charFrames[i - 1] + 1; f < charFrames[i]; f++) {
-        if (frameProbs[f]?.[BLANK_ID] > 0.5) blankRun++;
+        if (blankProbs[f] > 0.5) blankRun++;
       }
       if (blankRun >= GAP_FRAMES) result += ' ';
     }
@@ -208,13 +217,22 @@ function insertGapSpaces(frameProbs: Float32Array[], text: string, charFrames: n
   return result;
 }
 
-/**
- * Build the best transcript string: greedy decode (which respects ▁ tokens)
- * with blank-gap spaces as a fallback when ▁ is never the argmax.
- */
-function buildTranscript(frameProbs: Float32Array[]): string {
-  const { text, charFrames } = ctcGreedyDecode(frameProbs);
-  return insertGapSpaces(frameProbs, text, charFrames);
+// ── Top-5 token extraction (no large temporary arrays) ────────────────────────
+
+function computeTop5(probs: Float32Array): Array<{ sym: string; prob: number }> {
+  const ids: number[] = [];
+  for (let id = 0; id < probs.length; id++) {
+    const sym = ID_TO_TOKEN[id];
+    if (!sym || sym.startsWith('<') || sym === '▁') continue;
+    if (ids.length < 5) {
+      ids.push(id);
+      ids.sort((a, b) => probs[b] - probs[a]);
+    } else if (probs[id] > probs[ids[4]]) {
+      ids[4] = id;
+      ids.sort((a, b) => probs[b] - probs[a]);
+    }
+  }
+  return ids.map(id => ({ sym: ID_TO_TOKEN[id] ?? `?${id}`, prob: probs[id] }));
 }
 
 // ── Message handler ───────────────────────────────────────────────────────────
@@ -222,29 +240,55 @@ function buildTranscript(frameProbs: Float32Array[]): string {
 self.onmessage = async (ev: MessageEvent<WorkerInMsg>) => {
   const msg = ev.data;
 
+  // ── Load model ─────────────────────────────────────────────────────────────
   if (msg.type === 'load') {
     try {
       const model = MODELS.find(m => m.id === msg.modelId);
       if (!model) throw new Error(`Unknown model: ${msg.modelId}`);
 
       if (loadedModelId === msg.modelId && session) {
-        self.postMessage({ type: 'model-ready', modelId: msg.modelId } satisfies WorkerOutMsg);
+        self.postMessage({ type: 'model-ready', modelId: msg.modelId, executionProvider: 'wasm' } satisfies WorkerOutMsg);
         return;
       }
 
-      const url = modelUrl(model);
-      let modelData = await getModelFromCache(url);
+      const hfUrl    = modelUrl(model);
+      const pUrl     = modelProxyUrl(model);
+      const inCache  = await isModelInCacheStorage(pUrl);
 
-      if (!modelData) {
-        modelData = await downloadWithProgress(url, (pct, mbReceived, mbTotal) => {
-          self.postMessage({ type: 'download-progress', pct, mbReceived, mbTotal } satisfies WorkerOutMsg);
-        });
-        await saveModelToCache(url, modelData);
+      if (!inCache) {
+        // Check for legacy IndexedDB entry and migrate silently
+        const legacyBuf = await getModelFromCache(hfUrl);
+        if (legacyBuf) {
+          self.postMessage({ type: 'download-progress', pct: 0.5, mbReceived: 0, mbTotal: 0 } satisfies WorkerOutMsg);
+          await migrateFromIndexedDB(hfUrl, pUrl);
+          self.postMessage({ type: 'download-progress', pct: 1, mbReceived: 0, mbTotal: 0 } satisfies WorkerOutMsg);
+        } else {
+          // Fresh download — streaming into Cache Storage
+          await downloadModelToCache(hfUrl, pUrl, (pct, mbReceived, mbTotal) => {
+            self.postMessage({ type: 'download-progress', pct, mbReceived, mbTotal } satisfies WorkerOutMsg);
+          });
+        }
       }
 
-      session = await ort.InferenceSession.create(modelData, { executionProviders: ['wasm'] });
+      // ── Create ONNX session ───────────────────────────────────────────────
+      // Prefer the proxy URL: ort fetches from the SW, which serves from Cache Storage.
+      // This avoids holding a 65 MB ArrayBuffer in the JS heap while WASM loads.
+      // Fall back to ArrayBuffer if the SW is not yet active (first install).
+      let createdSession: ort.InferenceSession | null = null;
+      try {
+        createdSession = await createSession(pUrl);
+      } catch {
+        // SW not yet active — fall back to reading buffer from Cache Storage
+        const cache = await caches.open(MODEL_CACHE_NAME);
+        const cached = await cache.match(pUrl);
+        if (!cached) throw new Error('Model not in cache — please reload and try again.');
+        const buf = await cached.arrayBuffer();
+        createdSession = await createSession(buf);
+      }
+
+      session = createdSession;
       loadedModelId = msg.modelId;
-      self.postMessage({ type: 'model-ready', modelId: msg.modelId } satisfies WorkerOutMsg);
+      self.postMessage({ type: 'model-ready', modelId: msg.modelId, executionProvider: 'wasm' } satisfies WorkerOutMsg);
     } catch (e) {
       self.postMessage({ type: 'error', message: String(e) } satisfies WorkerOutMsg);
     }
@@ -255,6 +299,7 @@ self.onmessage = async (ev: MessageEvent<WorkerInMsg>) => {
     return;
   }
 
+  // ── Inference ──────────────────────────────────────────────────────────────
   if (msg.type === 'infer') {
     cancelled = false;
     const TIMEOUT_MS = 30_000;
@@ -268,40 +313,82 @@ self.onmessage = async (ev: MessageEvent<WorkerInMsg>) => {
 
       const { features, numFrames } = extractFbank(msg.audio);
       if (cancelled) return;
+
       const inputTensor = new ort.Tensor('float32', features, [1, numFrames, 80]);
       const lensTensor  = new ort.Tensor('int64', new BigInt64Array([BigInt(numFrames)]), [1]);
       const outputs     = await session.run({ x: inputTensor, x_lens: lensTensor });
-      if (cancelled) return;
-      const raw         = outputs[session.outputNames[0]];
 
+      // Dispose input tensors to free WASM allocations.
+      inputTensor.dispose();
+      lensTensor.dispose();
+
+      if (cancelled) return;
+
+      const raw = outputs[session.outputNames[0]];
       const [, numCtcFrames, vocabSize] = raw.dims as number[];
       const data = raw.data as Float32Array;
 
-      const frameProbs: Float32Array[] = [];
+      // ── Streaming frame processing ────────────────────────────────────────
+      // Two small reusable buffers instead of allocating Float32Array(vocabSize) per frame.
+      // blankProbs (1 float/frame) is the only per-frame allocation kept long-term.
+      const probsBuf   = new Float32Array(vocabSize);
+      const logPBuf    = new Float64Array(vocabSize);
+      const blankProbs = new Float32Array(numCtcFrames);
+
       const framesOut: FrameOut[] = [];
 
+      let beamMap = new Map<string, BeamState>([
+        ['', { logPb: 0, logPnb: LOG_ZERO, lastId: -1 }],
+      ]);
+
+      let greedyText = '';
+      const greedyCharFrames: number[] = [];
+      let lastGreedyId = -1;
+
       for (let f = 0; f < numCtcFrames; f++) {
-        const logits = data.slice(f * vocabSize, (f + 1) * vocabSize);
-        const probs = softmax(logits);
-        frameProbs.push(probs);
+        // In-place softmax directly into probsBuf — no data.slice() copy per frame
+        const offset = f * vocabSize;
+        let max = -Infinity;
+        for (let i = 0; i < vocabSize; i++) { const v = data[offset + i]; if (v > max) max = v; }
+        let sum = 0;
+        for (let i = 0; i < vocabSize; i++) { probsBuf[i] = Math.exp(data[offset + i] - max); sum += probsBuf[i]; }
+        for (let i = 0; i < vocabSize; i++) probsBuf[i] /= sum;
 
-        // Top-5 tokens
-        const top5 = Array.from(probs)
-          .map((prob, id) => {
-            const sym = ID_TO_TOKEN[id];
-            if (sym === undefined) console.warn(`Unknown token id ${id} in vocab`);
-            return { sym: sym ?? `?${id}`, prob };
-          })
-          .filter(t => !t.sym.startsWith('<') && t.sym !== '▁')
-          .sort((a, b) => b.prob - a.prob)
-          .slice(0, 5);
+        for (let i = 0; i < vocabSize; i++) {
+          logPBuf[i] = probsBuf[i] > 0 ? Math.log(probsBuf[i]) : LOG_ZERO;
+        }
 
-        framesOut.push({ top5 });
+        blankProbs[f] = probsBuf[BLANK_ID];
+        beamMap = beamSearchStep(beamMap, logPBuf, 10);
+
+        // Greedy decode step
+        let maxId = 0;
+        for (let i = 1; i < vocabSize; i++) if (probsBuf[i] > probsBuf[maxId]) maxId = i;
+        if (maxId === BLANK_ID) {
+          lastGreedyId = -1;
+        } else if (maxId !== lastGreedyId) {
+          lastGreedyId = maxId;
+          const sym = ID_TO_TOKEN[maxId];
+          if (sym && !sym.startsWith('<')) {
+            if (sym === '▁') {
+              if (greedyText.length > 0 && !greedyText.endsWith(' ')) {
+                greedyText += ' ';
+                greedyCharFrames.push(f);
+              }
+            } else {
+              greedyText += sym;
+              greedyCharFrames.push(f);
+            }
+          }
+        }
+
+        framesOut.push({ top5: computeTop5(probsBuf) });
       }
 
       if (cancelled) return;
-      const beams      = ctcBeamSearch(frameProbs);
-      const transcript = buildTranscript(frameProbs);
+
+      const beams      = finalizeBeams(beamMap);
+      const transcript = insertGapSpaces(blankProbs, greedyText.trim(), greedyCharFrames);
       self.postMessage({ type: 'result', frames: framesOut, beams, transcript } satisfies WorkerOutMsg);
     } catch (e) {
       if (!cancelled) self.postMessage({ type: 'error', message: String(e) } satisfies WorkerOutMsg);

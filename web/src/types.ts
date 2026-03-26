@@ -12,6 +12,11 @@ export function modelUrl(m: ModelInfo): string {
   return `https://huggingface.co/${m.hfRepo}/resolve/main/${m.file}`;
 }
 
+/** Same-origin proxy URL served by the Service Worker from Cache Storage. */
+export function modelProxyUrl(m: ModelInfo): string {
+  return `/zipa-onnx-inference/model-proxy/${encodeURIComponent(m.id)}`;
+}
+
 export const MODELS: ModelInfo[] = [
   { id: 'zipa-small-crctc-ns-700k/int8',  label: 'Small NS 700k  int8  ~65 MB (recommended)',  hfRepo: 'anyspeech/zipa-small-crctc-ns-700k',  file: 'model.int8.onnx', sizeMb: 65  },
   { id: 'zipa-small-crctc-300k/int8',     label: 'Small CTC 300k  int8  ~65 MB',               hfRepo: 'anyspeech/zipa-small-crctc-300k',     file: 'model.int8.onnx', sizeMb: 65  },
@@ -28,7 +33,7 @@ export type WorkerInMsg =
 
 export type WorkerOutMsg =
   | { type: 'download-progress'; pct: number; mbReceived: number; mbTotal: number }
-  | { type: 'model-ready'; modelId: string }
+  | { type: 'model-ready'; modelId: string; executionProvider: string }
   | { type: 'result'; frames: FrameOut[]; beams: BeamOut[]; transcript: string }
   | { type: 'error'; message: string };
 

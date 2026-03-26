@@ -4,6 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZIPA ONNX Inference</title>
+  <script>
+  (function() {
+    var buf = [];
+    function show(msg) {
+      var el = document.getElementById('error-log');
+      if (!el) { buf.push(msg); return; }
+      el.style.display = 'block';
+      el.textContent += msg + '\n';
+    }
+    function flush() { buf.forEach(show); buf = []; }
+    window.addEventListener('error', function(e) {
+      show(e.message + '  (' + e.filename + ':' + e.lineno + ':' + e.colno + ')');
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      var r = e.reason;
+      show('Unhandled rejection: ' + (r && r.stack ? r.stack : r && r.message ? r.message : String(r)));
+    });
+    document.addEventListener('DOMContentLoaded', flush);
+  })();
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -185,13 +205,16 @@
     #page-desc a { color: #9cdcfe; }
 
     /* IPA overview */
-    #ipa-overview { margin-top: 2.5rem; }
-    #ipa-overview h2 {
+    #ipa-overview-section { margin-top: 2.5rem; }
+    #ipa-overview-section > summary {
+      cursor: pointer;
       font-size: 1rem;
       color: #9cdcfe;
       margin-bottom: .4rem;
       letter-spacing: .04em;
+      list-style: disclosure-closed;
     }
+    #ipa-overview-section[open] > summary { list-style: disclosure-open; }
     .overview-note {
       font-size: .75rem;
       color: #555;
@@ -242,6 +265,17 @@
     }
     .tech-info a { color: #9cdcfe; }
 
+    #browser-info {
+      margin-top: 1.5rem;
+      font-size: .75rem;
+      color: #555;
+      line-height: 1.8;
+    }
+    #browser-info .bi-label { color: #888; min-width: 9rem; display: inline-block; }
+    #browser-info .bi-val   { color: #d4d4d4; }
+    #browser-info .bi-ok    { color: #4ec9b0; }
+    #browser-info .bi-no    { color: #888; }
+
     footer {
       margin-top: 1.5rem;
       padding-top: 1.5rem;
@@ -260,6 +294,12 @@
       min-height: 1.2em;
       margin-bottom: .5rem;
     }
+
+    #crash-log-section { margin-bottom: 1rem; font-size: .8rem; }
+    #crash-log-section summary { cursor: pointer; color: #888; }
+    .crash-warning { background: #2a1500; border: 1px solid #e07040; border-radius:3px; padding:.5rem .7rem; margin-bottom:.5rem; color:#e07040; }
+    .crash-log-row { padding: .05rem 0; }
+    .clear-log-btn { margin-top:.5rem; font-size:.75rem; }
 
     #error-log {
       display: none;
@@ -369,6 +409,11 @@
   </section>
 
   <div id="error-log"></div>
+
+  <details id="crash-log-section" style="display:none">
+    <summary>Session log (crash detection)</summary>
+    <div id="crash-log-list" style="font-family:monospace;font-size:.75rem;white-space:pre-wrap"></div>
+  </details>
   <div id="status-line"></div>
 
   <div id="result-model" style="display:none;font-size:.75rem;color:#555;margin-bottom:.75rem"></div>
@@ -396,8 +441,8 @@
     <div id="history-list"></div>
   </details>
 
-  <section id="ipa-overview">
-    <h2>IPA Symbol Overview</h2>
+  <details id="ipa-overview-section">
+    <summary>IPA Symbol Overview</summary>
     <p class="overview-note">
       All symbols recognised by the model. Nearest neighbours are computed by Jaccard similarity of phonetic
       features (vowel: height / backness / roundedness; consonant: voicing / place / manner).
@@ -413,13 +458,17 @@
       </thead>
       <tbody id="ipa-table-body"></tbody>
     </table>
-  </section>
+  </details>
 
   <div class="tech-info">
     <strong>Privacy:</strong> This page uses ONNX models running entirely in your browser via
     <a href="https://onnxruntime.ai/" target="_blank" rel="noopener">ONNX Runtime Web</a>.
     No audio or data is ever uploaded to any server. This is a fully static web site with no backend.
   </div>
+
+  <section id="browser-info">
+    <div id="browser-info-rows"></div>
+  </section>
 
   <footer>
     <p>

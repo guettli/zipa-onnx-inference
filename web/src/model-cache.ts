@@ -1,12 +1,14 @@
 // src/speech/model-cache.ts
-// Simple IndexedDB cache for ONNX model files
+// Simple IndexedDB cache for recordings, history, partial downloads, and crash log.
+// ONNX model files are now stored in the Cache Storage API (see worker.ts / sw.js).
 
 const DB_NAME = "onnx-model-cache";
-const STORE_NAME = "models";
+const STORE_NAME = "models";          // legacy model ArrayBuffers + recording blob
 const PARTIAL_STORE_NAME = "partial-downloads";
 const HISTORY_STORE = "history";
 const AUDIO_STORE = "history-audio"; // audio stored separately to keep history store lean
-const DB_VERSION = 4;
+const CRASH_LOG_STORE = "crash-log";
+const DB_VERSION = 5;
 
 export interface HistoryEntry {
   id?: number;
@@ -16,6 +18,13 @@ export interface HistoryEntry {
   modelId: string;
   audioBuf?: ArrayBuffer; // raw audio bytes for reload
   inferenceDurationMs?: number;
+}
+
+export interface CrashLogEntry {
+  id?: number;
+  timestamp: string;  // ISO 8601
+  event: string;
+  detail?: string;
 }
 
 function openDB(): Promise<IDBDatabase> {
@@ -35,12 +44,18 @@ function openDB(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(AUDIO_STORE)) {
         db.createObjectStore(AUDIO_STORE);
       }
+      if (!db.objectStoreNames.contains(CRASH_LOG_STORE)) {
+        db.createObjectStore(CRASH_LOG_STORE, { keyPath: 'id', autoIncrement: true });
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
   });
 }
 
+// ── Model cache (legacy IndexedDB — new models go to Cache API) ───────────────
+
+/** @deprecated Models are now stored in Cache Storage API. This reads legacy entries. */
 export async function getModelFromCache(key: string): Promise<ArrayBuffer | null> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -52,6 +67,7 @@ export async function getModelFromCache(key: string): Promise<ArrayBuffer | null
   });
 }
 
+/** @deprecated Use Cache Storage API instead. */
 export async function saveModelToCache(key: string, arrayBuffer: ArrayBuffer): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -228,24 +244,56 @@ export async function isModelCached(key: string): Promise<boolean> {
   });
 }
 
-export async function getModelChecksum(key: string): Promise<string | null> {
+// ── Crash log ─────────────────────────────────────────────────────────────────
+
+const MAX_CRASH_LOG_ENTRIES = 60;
+
+/**
+ * Append an entry to the persistent crash log.
+ * This is a fire-and-forget write — safe to call without await.
+ * The browser commits IndexedDB transactions even if the tab crashes shortly after.
+ */
+export async function appendCrashLog(event: string, detail?: string): Promise<void> {
+  const entry: CrashLogEntry = { timestamp: new Date().toISOString(), event, detail };
+  const db = await openDB();
+  return new Promise((resolve) => {
+    const tx = db.transaction(CRASH_LOG_STORE, "readwrite");
+    const store = tx.objectStore(CRASH_LOG_STORE);
+    store.add(entry);
+    // Trim to last MAX entries
+    const cursorReq = store.openCursor();
+    cursorReq.onsuccess = () => {
+      const cursor = cursorReq.result;
+      if (cursor) {
+        const key = cursor.key as number;
+        const highestId = entry.id ?? key + 1;
+        if (highestId - key >= MAX_CRASH_LOG_ENTRIES) {
+          cursor.delete();
+          cursor.continue();
+        }
+      }
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve(); // non-fatal
+  });
+}
+
+export async function loadCrashLog(): Promise<CrashLogEntry[]> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.get(key + ":sha256");
-    req.onsuccess = () => resolve((req.result as string) || null);
+    const tx = db.transaction(CRASH_LOG_STORE, "readonly");
+    const req = tx.objectStore(CRASH_LOG_STORE).getAll();
+    req.onsuccess = () => resolve(req.result as CrashLogEntry[]);
     req.onerror = () => reject(req.error);
   });
 }
 
-export async function saveModelChecksum(key: string, checksum: string): Promise<void> {
+export async function clearCrashLog(): Promise<void> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.put(checksum, key + ":sha256");
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+    const tx = db.transaction(CRASH_LOG_STORE, "readwrite");
+    tx.objectStore(CRASH_LOG_STORE).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
   });
 }
