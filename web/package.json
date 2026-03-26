@@ -10,7 +10,7 @@
     "test:mem": "playwright test tests/memory.spec.ts --reporter=line"
   },
   "dependencies": {
-    "onnxruntime-web": "1.18.0"
+    "onnxruntime-web": "1.24.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

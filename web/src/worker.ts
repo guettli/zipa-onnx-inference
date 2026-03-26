@@ -28,7 +28,12 @@ import { MODELS, modelUrl, modelProxyUrl } from './types.js';
 
 // ── ONNX Runtime config ───────────────────────────────────────────────────────
 ort.env.wasm.numThreads = 1;
-ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/';
+// Explicitly use non-JSEP WASM variants to avoid Safari/WebKit 26.2 crash.
+// See: https://github.com/microsoft/onnxruntime/issues/26827#issuecomment-4133648677
+ort.env.wasm.wasmPaths = {
+  wasm: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/ort-wasm-simd-threaded.wasm',
+  mjs: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.24.3/dist/ort-wasm-simd-threaded.mjs',
+};
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let session: ort.InferenceSession | null = null;
