@@ -19,6 +19,20 @@ export default tseslint.config(
     rules: {},
   },
   {
+    // .mjs scripts run in Node.js and use browser-like globals (fetch, console, etc.)
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        console: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        process: 'readonly',
+      },
+    },
+  },
+  {
     ignores: ['dist/**', 'node_modules/**', 'data/**'],
   },
 );
