@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "tsx src/frame-utils.test.ts",
+    "test": "tsx src/frame-utils.test.ts && tsx src/whisper-utils.test.ts",
     "test:mem": "playwright test tests/memory.spec.ts --reporter=line"
   },
   "dependencies": {

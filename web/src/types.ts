@@ -37,6 +37,22 @@ export type WorkerOutMsg =
   | { type: 'result'; frames: FrameOut[]; beams: BeamOut[]; transcript: string }
   | { type: 'error'; message: string };
 
+// ── Whisper worker messages ───────────────────────────────────────────────────
+
+export type WhisperWorkerInMsg =
+  | { type: 'load' }
+  | { type: 'infer'; audio: Float32Array; language: string }
+  | { type: 'cancel' };
+
+export type WhisperWorkerOutMsg =
+  | { type: 'download-progress'; file: 'encoder' | 'decoder' | 'vocab'; pct: number; mbReceived: number; mbTotal: number }
+  | { type: 'model-ready' }
+  | { type: 'result'; transcript: string }
+  | { type: 'error'; message: string };
+
+/** Which models to run when audio is processed. */
+export type InferenceMode = 'both' | 'zipa' | 'whisper';
+
 export interface FrameOut {
   top5: Array<{ sym: string; prob: number }>;
 }

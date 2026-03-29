@@ -1,5 +1,6 @@
-import type { WorkerInMsg, WorkerOutMsg, FrameOut, BeamOut } from './types.js';
+import type { WorkerInMsg, WorkerOutMsg, FrameOut, BeamOut, WhisperWorkerInMsg, WhisperWorkerOutMsg, InferenceMode } from './types.js';
 import { MODELS, modelUrl, modelProxyUrl } from './types.js';
+import { detectBrowserLanguage, SUPPORTED_LANGUAGES, LANG_LABELS } from './whisper-utils.js';
 import { isModelCached, getPartialDownload, pruneStalePartials,
          saveHistoryEntry, loadHistory, loadHistoryAudio,
          appendCrashLog, loadCrashLog, clearCrashLog } from './model-cache.js';
@@ -68,6 +69,122 @@ const historySection    = document.getElementById('history-section')    as HTMLD
 const historyList       = document.getElementById('history-list')       as HTMLDivElement;
 const crashLogSection   = document.getElementById('crash-log-section')  as HTMLElement | null;
 const crashLogList      = document.getElementById('crash-log-list')     as HTMLElement | null;
+
+// ── Whisper / mode DOM refs ───────────────────────────────────────────────────
+const modeSelect            = document.getElementById('mode-select')             as HTMLSelectElement;
+const languageSection       = document.getElementById('language-section')        as HTMLElement;
+const languageSelect        = document.getElementById('language-select')         as HTMLSelectElement;
+const whisperStatusEl       = document.getElementById('whisper-status')          as HTMLDivElement;
+const whisperProgressBar    = document.getElementById('whisper-progress-bar')    as HTMLDivElement;
+const whisperProgressFill   = document.getElementById('whisper-progress-fill')   as HTMLDivElement;
+const whisperResultSection  = document.getElementById('whisper-result-section')  as HTMLElement;
+const whisperTranscriptEl   = document.getElementById('whisper-transcript')      as HTMLDivElement;
+
+// ── Mode & language state ─────────────────────────────────────────────────────
+
+let inferenceMode: InferenceMode = (modeSelect.value as InferenceMode) || 'both';
+let currentLanguage: string = detectBrowserLanguage();
+
+function updateLanguageVisibility() {
+  languageSection.style.display = inferenceMode !== 'zipa' ? '' : 'none';
+}
+updateLanguageVisibility();
+
+// Populate language selector
+for (const lang of SUPPORTED_LANGUAGES) {
+  const opt = document.createElement('option');
+  opt.value = lang;
+  opt.textContent = `${LANG_LABELS[lang]} (${lang})`;
+  languageSelect.appendChild(opt);
+}
+languageSelect.value = currentLanguage;
+
+modeSelect.addEventListener('change', () => {
+  inferenceMode = modeSelect.value as InferenceMode;
+  updateLanguageVisibility();
+  // Hide sections that don't apply to the new mode
+  if (inferenceMode === 'whisper') {
+    transcriptSection.style.display = 'none';
+    beamsSection.style.display      = 'none';
+    framesSection.style.display     = 'none';
+    resultModelEl.style.display     = 'none';
+  }
+  if (inferenceMode === 'zipa') {
+    whisperResultSection.style.display = 'none';
+  }
+  // Ensure whisper is loaded when mode switches to include it
+  if (inferenceMode !== 'zipa' && !whisperReady) {
+    sendWhisper({ type: 'load' });
+  }
+});
+
+languageSelect.addEventListener('change', () => {
+  currentLanguage = languageSelect.value;
+});
+
+// ── Whisper worker ────────────────────────────────────────────────────────────
+
+const whisperWorker = new Worker(new URL('./whisper-worker.ts', import.meta.url), { type: 'module' });
+let whisperReady = false;
+let whisperInferStartMs = 0;
+
+function sendWhisper(msg: WhisperWorkerInMsg) { whisperWorker.postMessage(msg); }
+
+function setWhisperStatus(text: string, cls = '') {
+  whisperStatusEl.textContent = text;
+  whisperStatusEl.className = cls;
+}
+
+whisperWorker.onmessage = (ev: MessageEvent<WhisperWorkerOutMsg>) => {
+  const msg = ev.data;
+
+  if (msg.type === 'download-progress') {
+    whisperProgressBar.style.display = 'block';
+    const pct = (msg.pct * 100).toFixed(0);
+    whisperProgressFill.style.width = `${pct}%`;
+    const mb  = msg.mbReceived.toFixed(1);
+    const tot = msg.mbTotal > 0 ? ` / ${msg.mbTotal.toFixed(0)} MB` : '';
+    setWhisperStatus(`Whisper: downloading ${msg.file}… ${pct}% (${mb}${tot} MB)`);
+    return;
+  }
+
+  if (msg.type === 'model-ready') {
+    whisperProgressBar.style.display = 'none';
+    whisperReady = true;
+    setWhisperStatus('Whisper ready', 'ready');
+    if (inferenceMode !== 'zipa' && pendingWhisperAudio) {
+      const audio = pendingWhisperAudio;
+      pendingWhisperAudio = null;
+      sendWhisper({ type: 'infer', audio, language: currentLanguage });
+    }
+    return;
+  }
+
+  if (msg.type === 'result') {
+    const inferSec = whisperInferStartMs > 0
+      ? ` (${((performance.now() - whisperInferStartMs) / 1000).toFixed(1)} s)`
+      : '';
+    whisperInferStartMs = 0;
+    setWhisperStatus(`Whisper (tiny)${inferSec}`, 'ready');
+    whisperTranscriptEl.textContent = msg.transcript || '(no speech detected)';
+    whisperResultSection.style.display = '';
+    if (!isAnyInferenceRunning()) setInputsDisabled(false);
+    return;
+  }
+
+  if (msg.type === 'error') {
+    whisperInferStartMs = 0;
+    setWhisperStatus(`Whisper error: ${msg.message}`, 'error');
+    if (!isAnyInferenceRunning()) setInputsDisabled(false);
+    return;
+  }
+};
+
+// Queue audio for whisper when model isn't ready yet
+let pendingWhisperAudio: Float32Array | null = null;
+
+// Kick off whisper model load immediately (download starts in background)
+sendWhisper({ type: 'load' });
 
 // ── Crash log rendering ───────────────────────────────────────────────────────
 
@@ -168,6 +285,12 @@ function setInputsDisabled(disabled: boolean) {
   rerunBtn.disabled   = disabled || !hasSessionAudio;
 }
 
+/** True when at least one worker result is still outstanding. */
+function isAnyInferenceRunning(): boolean {
+  return (inferenceMode !== 'whisper' && inferStartMs > 0)
+      || (inferenceMode !== 'zipa'    && whisperInferStartMs > 0);
+}
+
 worker.onmessage = (ev: MessageEvent<WorkerOutMsg>) => {
   const msg = ev.data;
 
@@ -221,9 +344,10 @@ worker.onmessage = (ev: MessageEvent<WorkerOutMsg>) => {
     appendCrashLog('infer-done', inferenceDurationMs ? `${(inferenceDurationMs/1000).toFixed(1)}s` : undefined).catch(() => {});
     recordBtn.textContent = '🎤 Record';
     recordBtn.classList.remove('recording');
-    setInputsDisabled(false);
+    // Only re-enable inputs when all in-flight workers are done
+    if (!isAnyInferenceRunning()) setInputsDisabled(false);
     const inferSec = inferenceDurationMs !== undefined ? ` | inference: ${(inferenceDurationMs / 1000).toFixed(1)} s` : '';
-    resultModelEl.textContent = `Result from: ${modelSelect.value}${inferSec}`;
+    resultModelEl.textContent = `ZIPA result: ${modelSelect.value}${inferSec}`;
     resultModelEl.style.display = '';
     // Render transcript with lazy IPA data
     getIpaDesc().then(desc => {
@@ -427,10 +551,27 @@ async function processAudio(blob: Blob) {
   } else {
     setStatus('Running inference…');
   }
-  inferStartMs = performance.now();
-  appendCrashLog('infer-start', `model=${modelSelect.value} dur=${duration.toFixed(1)}s`).catch(() => {});
-  send({ type: 'infer', audio });
-  // audio goes out of scope here — PCM Float32Array can be GC'd
+
+  setInputsDisabled(true);
+
+  // ── Zipa inference ──────────────────────────────────────────────────────────
+  if (inferenceMode !== 'whisper') {
+    inferStartMs = performance.now();
+    appendCrashLog('infer-start', `model=${modelSelect.value} dur=${duration.toFixed(1)}s`).catch(() => {});
+    send({ type: 'infer', audio });
+  }
+
+  // ── Whisper inference ───────────────────────────────────────────────────────
+  if (inferenceMode !== 'zipa') {
+    whisperInferStartMs = performance.now();
+    if (whisperReady) {
+      sendWhisper({ type: 'infer', audio, language: currentLanguage });
+    } else {
+      // Model still loading — queue audio for when it's ready
+      pendingWhisperAudio = audio;
+      setWhisperStatus('Whisper: waiting for model to load…');
+    }
+  }
 }
 
 rerunBtn.addEventListener('click', async () => {

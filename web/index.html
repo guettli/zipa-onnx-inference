@@ -63,7 +63,15 @@
     #model-status.ready { color: #4ec9b0; }
     #model-status.error { color: #f44747; }
 
-    #progress-bar {
+    #whisper-status {
+      font-size: .8rem;
+      margin-top: .5rem;
+      color: #888;
+    }
+    #whisper-status.ready { color: #4ec9b0; }
+    #whisper-status.error { color: #f44747; }
+
+    #progress-bar, #whisper-progress-bar {
       height: 4px;
       background: #1e1e1e;
       border-radius: 2px;
@@ -376,19 +384,34 @@
   <h1>⟨ ZIPA ONNX Inference ⟩</h1>
 
   <p id="page-desc">
-    Record your voice or upload an audio file and get an
-    <a href="https://en.wikipedia.org/wiki/International_Phonetic_Alphabet" target="_blank" rel="noopener">IPA</a>
-    (International Phonetic Alphabet) phonetic transcription — powered by
-    <a href="https://github.com/lingjzhu/zipa" target="_blank" rel="noopener">ZIPA</a> ONNX models running
-    entirely in your browser. Select a model, hit <strong>Record</strong>, and see each sound broken down into
-    IPA symbols with frame-level confidence scores. No audio ever leaves your device.
+    Record your voice or upload an audio file and get a phonetic transcription — entirely in your browser.
+    <strong>ZIPA</strong> outputs <a href="https://en.wikipedia.org/wiki/International_Phonetic_Alphabet" target="_blank" rel="noopener">IPA</a>
+    symbols with frame-level detail.
+    <strong>Whisper tiny</strong> outputs regular text in your chosen language.
+    Run one or both. No audio ever leaves your device.
   </p>
 
   <section>
-    <label>Model</label>
+    <label>Models</label>
+    <select id="mode-select">
+      <option value="both" selected>ZIPA + Whisper (both)</option>
+      <option value="zipa">ZIPA only (IPA)</option>
+      <option value="whisper">Whisper only (text)</option>
+    </select>
+  </section>
+
+  <section id="zipa-model-section">
+    <label>ZIPA model</label>
     <select id="model-select"></select>
     <div id="progress-bar"><div id="progress-fill"></div></div>
     <div id="model-status">Not loaded</div>
+  </section>
+
+  <section id="language-section">
+    <label>Whisper language</label>
+    <select id="language-select"></select>
+    <div id="whisper-progress-bar" style="display:none"><div id="whisper-progress-fill" style="height:100%;background:#9cdcfe;transition:width .2s;width:0%"></div></div>
+    <div id="whisper-status">Loading Whisper…</div>
   </section>
 
   <section>
@@ -419,9 +442,14 @@
   <div id="result-model" style="display:none;font-size:.75rem;color:#555;margin-bottom:.75rem"></div>
 
   <details id="transcript-section" style="display:none">
-    <summary>Transcript</summary>
+    <summary>ZIPA transcript (IPA)</summary>
     <div id="transcript"></div>
   </details>
+
+  <section id="whisper-result-section" style="display:none">
+    <label>Whisper transcript (text)</label>
+    <div id="whisper-transcript" style="font-size:1.4rem;color:#4ec9b0;letter-spacing:.02em;padding:.3rem 0;word-break:break-word"></div>
+  </section>
 
   <section id="beams-section" style="display:none">
     <label>Beam hypotheses (normalised over top-10)</label>
