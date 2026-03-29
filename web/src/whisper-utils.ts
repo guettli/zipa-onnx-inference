@@ -12,11 +12,12 @@
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const SAMPLE_RATE = 16000;
-const N_FFT       = 400;       // 25 ms frame
-const HOP_LENGTH  = 160;       // 10 ms shift
-const N_MELS      = 80;
-const N_SAMPLES   = 480_000;   // 30 s × 16 kHz
+const SAMPLE_RATE  = 16000;
+const N_FFT        = 400;       // 25 ms Hann window length
+const N_FFT_PADDED = 512;       // next power-of-2 ≥ N_FFT for radix-2 FFT
+const HOP_LENGTH   = 160;       // 10 ms shift
+const N_MELS       = 80;
+const N_SAMPLES    = 480_000;   // 30 s × 16 kHz
 export const N_FRAMES = 3000;  // output mel frames
 
 // ── Hann window ───────────────────────────────────────────────────────────────
@@ -65,7 +66,7 @@ function fftInPlace(re: Float64Array, im: Float64Array): void {
 
 // ── Mel filterbank (librosa slaney-normalised, matches whisper's mel_filters.npz) ──
 
-const N_FREQ = N_FFT / 2 + 1; // 201 one-sided FFT bins
+const N_FREQ = N_FFT_PADDED / 2 + 1; // 257 one-sided FFT bins
 
 const MEL_FILTERS = (() => {
   function hzToMel(hz: number): number { return 2595 * Math.log10(1 + hz / 700); }
@@ -83,7 +84,7 @@ const MEL_FILTERS = (() => {
     const lo = hzPts[m], mid = hzPts[m + 1], hi = hzPts[m + 2];
     const f = new Float32Array(N_FREQ);
     for (let k = 0; k < N_FREQ; k++) {
-      const freq = (k * SAMPLE_RATE) / N_FFT;
+      const freq = (k * SAMPLE_RATE) / N_FFT_PADDED;
       if (freq >= lo && freq <= mid) {
         f[k] = (freq - lo) / (mid - lo);
       } else if (freq > mid && freq <= hi) {
@@ -115,8 +116,10 @@ export function computeWhisperMel(audio: Float32Array): Float32Array {
   working.set(padded, centerPad);
 
   // 3. STFT → power spectrum → mel filterbank (N_FRAMES rows, N_MELS cols)
-  const re = new Float64Array(N_FFT);
-  const im = new Float64Array(N_FFT);
+  // Use N_FFT_PADDED buffers (power-of-2) for the radix-2 FFT; only the first
+  // N_FFT samples are filled with windowed audio — the rest stay zero.
+  const re = new Float64Array(N_FFT_PADDED);
+  const im = new Float64Array(N_FFT_PADDED);
 
   // mel[t * N_MELS + m] = energy of mel bin m at frame t
   const melRaw = new Float32Array(N_FRAMES * N_MELS);
